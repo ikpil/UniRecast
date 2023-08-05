@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using DotRecast.Core;
 using DotRecast.Detour;
 using DotRecast.Detour.Io;
-using DotRecast.Recast.DemoTool;
+using DotRecast.Recast.Toolset;
 using UnityEngine;
 
 namespace UniRecast

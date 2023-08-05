@@ -18,7 +18,7 @@ freely, subject to the following restrictions:
 
 using System;
 using DotRecast.Core;
-using K4os.Compression.LZ4;
+//using K4os.Compression.LZ4;
 
 namespace DotRecast.Detour.Dynamic.Io
 {
@@ -27,16 +27,18 @@ namespace DotRecast.Detour.Dynamic.Io
         public byte[] Decompress(byte[] data)
         {
             int compressedSize = ByteUtils.GetIntBE(data, 0);
-            return LZ4Pickler.Unpickle(data.AsSpan(4, compressedSize));
+            //return LZ4Pickler.Unpickle(data.AsSpan(4, compressedSize));
+            return null;
         }
 
         public byte[] Compress(byte[] data)
         {
-            byte[] compressed = LZ4Pickler.Pickle(data, LZ4Level.L12_MAX);
-            byte[] result = new byte[4 + compressed.Length];
-            ByteUtils.PutInt(compressed.Length, result, 0, RcByteOrder.BIG_ENDIAN);
-            Array.Copy(compressed, 0, result, 4, compressed.Length);
-            return result;
+            // byte[] compressed = LZ4Pickler.Pickle(data, LZ4Level.L12_MAX);
+            // byte[] result = new byte[4 + compressed.Length];
+            // ByteUtils.PutInt(compressed.Length, result, 0, RcByteOrder.BIG_ENDIAN);
+            // Array.Copy(compressed, 0, result, 4, compressed.Length);
+            // return result;
+            return null;
         }
     }
 }

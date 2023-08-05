@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using DotNetty.Common;
 using DotRecast.Detour;
-using DotRecast.Recast.DemoTool;
+using DotRecast.Recast.Toolset;
 using UnityEditor;
 using UnityEngine;
 

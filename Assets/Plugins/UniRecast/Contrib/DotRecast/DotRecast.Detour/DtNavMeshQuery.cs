@@ -20,8 +20,6 @@ freely, subject to the following restrictions:
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Numerics;
 using DotRecast.Core;
 
 namespace DotRecast.Detour
@@ -202,7 +200,7 @@ namespace DotRecast.Detour
         public DtStatus FindRandomPointAroundCircle(long startRef, RcVec3f centerPos, float maxRadius,
             IDtQueryFilter filter, IRcRand frand, out long randomRef, out RcVec3f randomPt)
         {
-            return FindRandomPointAroundCircle(startRef, centerPos, maxRadius, filter, frand, NoOpPolygonByCircleConstraint.Noop, out randomRef, out randomPt);
+            return FindRandomPointAroundCircle(startRef, centerPos, maxRadius, filter, frand, DtNoOpDtPolygonByCircleConstraint.Noop, out randomRef, out randomPt);
         }
 
         /**
@@ -223,11 +221,11 @@ namespace DotRecast.Detour
         public DtStatus FindRandomPointWithinCircle(long startRef, RcVec3f centerPos, float maxRadius,
             IDtQueryFilter filter, IRcRand frand, out long randomRef, out RcVec3f randomPt)
         {
-            return FindRandomPointAroundCircle(startRef, centerPos, maxRadius, filter, frand, StrictPolygonByCircleConstraint.Strict, out randomRef, out randomPt);
+            return FindRandomPointAroundCircle(startRef, centerPos, maxRadius, filter, frand, DtStrictDtPolygonByCircleConstraint.Strict, out randomRef, out randomPt);
         }
 
         public DtStatus FindRandomPointAroundCircle(long startRef, RcVec3f centerPos, float maxRadius,
-            IDtQueryFilter filter, IRcRand frand, IPolygonByCircleConstraint constraint,
+            IDtQueryFilter filter, IRcRand frand, IDtPolygonByCircleConstraint constraint,
             out long randomRef, out RcVec3f randomPt)
         {
             randomRef = startRef;
@@ -551,11 +549,12 @@ namespace DotRecast.Detour
                 return DtStatus.DT_SUCCSESS;
             }
 
-            float? h = m_nav.GetPolyHeight(tile, poly, pos);
-            if (!h.HasValue)
+            if (!m_nav.GetPolyHeight(tile, poly, pos, out var h))
+            {
                 return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
+            }
 
-            height = h.Value;
+            height = h;
             return DtStatus.DT_SUCCSESS;
         }
 
@@ -724,7 +723,7 @@ namespace DotRecast.Detour
         {
             if (!RcVec3f.IsFinite(center) || !RcVec3f.IsFinite(halfExtents))
             {
-                return ImmutableArray<DtMeshTile>.Empty;
+                return RcImmutableArray<DtMeshTile>.Empty;
             }
 
             RcVec3f bmin = center.Subtract(halfExtents);
@@ -3424,6 +3423,7 @@ namespace DotRecast.Detour
 
                 curNode = nextNode;
             } while (curNode != null);
+
             path.Reverse();
             return DtStatus.DT_SUCCSESS;
         }

@@ -19,7 +19,7 @@ freely, subject to the following restrictions:
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using DotRecast.Core;
 using DotRecast.Detour.Dynamic.Colliders;
@@ -33,7 +33,7 @@ namespace DotRecast.Detour.Dynamic
         public readonly VoxelTile voxelTile;
         public DynamicTileCheckpoint checkpoint;
         public RecastBuilderResult recastResult;
-        DtMeshData meshData;
+        private DtMeshData meshData;
         private readonly ConcurrentDictionary<long, ICollider> colliders = new ConcurrentDictionary<long, ICollider>();
         private bool dirty = true;
         private long id;
@@ -60,8 +60,14 @@ namespace DotRecast.Detour.Dynamic
 
         private RcHeightfield BuildHeightfield(DynamicNavMeshConfig config, RcTelemetry telemetry)
         {
-            ICollection<long> rasterizedColliders = checkpoint != null ? checkpoint.colliders : ImmutableHashSet<long>.Empty;
-            RcHeightfield heightfield = checkpoint != null ? checkpoint.heightfield : voxelTile.Heightfield();
+            ICollection<long> rasterizedColliders = checkpoint != null
+                ? checkpoint.colliders as ICollection<long>
+                : RcImmutableArray<long>.Empty;
+
+            RcHeightfield heightfield = checkpoint != null
+                ? checkpoint.heightfield
+                : voxelTile.Heightfield();
+
             foreach (var (cid, c) in colliders)
             {
                 if (!rasterizedColliders.Contains(cid))

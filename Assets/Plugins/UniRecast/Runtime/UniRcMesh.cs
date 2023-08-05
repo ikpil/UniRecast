@@ -3,9 +3,9 @@ using System.IO;
 using System.Text;
 using DotRecast.Core;
 using DotRecast.Detour;
-using DotRecast.Recast.DemoTool;
-using DotRecast.Recast.DemoTool.Builder;
-using DotRecast.Recast.DemoTool.Geom;
+using DotRecast.Recast.Toolset;
+using DotRecast.Recast.Toolset.Builder;
+using DotRecast.Recast.Toolset.Geom;
 using UnityEngine;
 
 namespace UniRecast

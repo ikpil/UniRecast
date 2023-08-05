@@ -116,17 +116,17 @@ namespace DotRecast.Detour
                 if (axis == 0)
                 {
                     // Sort along x-axis
-                    Array.Sort(items, imin, inum, new CompareItemX());
+                    Array.Sort(items, imin, inum, BVItemXComparer.Shared);
                 }
                 else if (axis == 1)
                 {
                     // Sort along y-axis
-                    Array.Sort(items, imin, inum, new CompareItemY());
+                    Array.Sort(items, imin, inum, BVItemYComparer.Shared);
                 }
                 else
                 {
                     // Sort along z-axis
-                    Array.Sort(items, imin, inum, new CompareItemZ());
+                    Array.Sort(items, imin, inum, BVItemZComparer.Shared);
                 }
 
                 int isplit = imin + inum / 2;
