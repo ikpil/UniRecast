@@ -1,30 +1,77 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
+
+public class CsProj
+{
+    public string Name { get; init; }
+
+    public CsProj(string name)
+    {
+        Name = name;
+    }
+}
 
 public class Program
 {
-    public static void InitWorkingDirectory()
+    public static void Main()
+    {
+        var directoryName = GetProgramDirectory("Program.cs");
+        Directory.SetCurrentDirectory(directoryName);
+
+        var ignorePaths = ImmutableArray.Create("bin", "obj");
+        var projs = ImmutableArray.Create(
+            new CsProj("DotRecast.Core"),
+            new CsProj("DotRecast.Recast"),
+            new CsProj("DotRecast.Detour"),
+            new CsProj("DotRecast.Detour.Crowd"),
+            new CsProj("DotRecast.Detour.Dynamic"),
+            new CsProj("DotRecast.Detour.Extras"),
+            new CsProj("DotRecast.Detour.TileCache"),
+            new CsProj("DotRecast.Recast.Toolset")
+        );
+
+        string srcRoot = "../../../DotRecast";
+        srcRoot = Path.GetFullPath(srcRoot);
+        if (!Directory.Exists(srcRoot))
+        {
+            throw new Exception("not found source directory");
+        }
+
+        string destRoot = "../../UniRecast/Assets/Plugins/UniRecast/Contrib/DotRecast";
+        destRoot = Path.GetFullPath(destRoot);
+        if (Directory.Exists(destRoot))
+        {
+            Directory.Delete(destRoot, true);
+        }
+
+        foreach (var proj in projs)
+        {
+            var sourcePath = $"../../../DotRecast/src/{proj.Name}";
+            var destPath = $"{destRoot}/src/{proj.Name}";
+            SyncFiles(sourcePath, destPath, ignorePaths, "*.cs");
+        }
+    }
+
+    public static string GetProgramDirectory(string fileName)
     {
         for (int i = 0; i < 10; ++i)
         {
-            var path = string.Join("../", Enumerable.Range(0, i).Select(x => "../"));
-            var filePath = Path.Combine(path, "Program.cs");
+            var path = string.Join("", Enumerable.Range(0, i).Select(x => "../"));
+
+
+            var filePath = Path.Combine(path, fileName);
             if (File.Exists(filePath))
             {
                 var fullPath = Path.GetFullPath(filePath);
-                var findlPAth = Path.GetDirectoryName(fullPath);
-                Directory.SetCurrentDirectory(findlPAth);
+                var directoryName = Path.GetDirectoryName(fullPath);
+                return directoryName;
             }
-
         }
-    }
-    
-    public static void Main()
-    {
-        InitWorkingDirectory();
-        Sync("../../../Sample1", "../../../Sample2", Array.Empty<string>());
+
+        return Directory.GetCurrentDirectory();
     }
 
-    private static void Sync(string srcRootPath, string dstRootPath, IList<string> ignoreFolders, string searchPattern = "*")
+    private static void SyncFiles(string srcRootPath, string dstRootPath, IList<string> ignoreFolders, string searchPattern = "*")
     {
         // 끝에서부터 이그노어 폴더일 경우 패스
         var destLastFolderName = Path.GetFileName(dstRootPath);
@@ -82,7 +129,7 @@ public class Program
         foreach (var sourceFolder in sourceFolders)
         {
             var dest = Path.Combine(dstRootPath, sourceFolder.Name);
-            Sync(sourceFolder.FullName, dest, ignoreFolders, searchPattern);
+            SyncFiles(sourceFolder.FullName, dest, ignoreFolders, searchPattern);
         }
     }
 }
