@@ -13,10 +13,21 @@ public class CsProj
 
 public class Program
 {
-    public static void Main()
+    public static void Main(string[] args)
     {
         var directoryName = GetProgramDirectory("Program.cs");
         Directory.SetCurrentDirectory(directoryName);
+        
+        // for dotnet run
+        var safeArgs = args
+            .Where(x => x != "--argument")
+            .ToList();
+
+        if (0 >= safeArgs.Count)
+        {
+            throw new Exception("not found source directory");
+        }
+            
 
         var ignorePaths = ImmutableArray.Create("bin", "obj");
         var projs = ImmutableArray.Create(
@@ -30,9 +41,9 @@ public class Program
             new CsProj("DotRecast.Recast.Toolset")
         );
 
-        string srcRoot = "../../../DotRecast";
-        srcRoot = Path.GetFullPath(srcRoot);
-        if (!Directory.Exists(srcRoot))
+        string dotRecastPath = safeArgs[0];
+        dotRecastPath = Path.GetFullPath(dotRecastPath);
+        if (!Directory.Exists(dotRecastPath))
         {
             throw new Exception("not found source directory");
         }
