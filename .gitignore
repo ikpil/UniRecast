@@ -19,6 +19,6 @@ UserSettings
 *.user
 *.nuget.*
 *.csproj.user
-*.csproj
-*.sln
+UniRecast/*.csproj
+UniRecast/*.sln
 .fake
