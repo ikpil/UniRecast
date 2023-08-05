@@ -22,8 +22,20 @@ using DotRecast.Core;
 
 namespace DotRecast.Detour.TileCache.Io.Compress
 {
-    public class DtTileCacheFastLzCompressor : IDtTileCacheCompressor
+    public class DtTileCacheFastLzCompressor : IRcCompressor
     {
+        public static readonly DtTileCacheFastLzCompressor Shared = new DtTileCacheFastLzCompressor();
+
+        private DtTileCacheFastLzCompressor()
+        {
+            
+        }
+
+        public byte[] Decompress(byte[] buf)
+        {
+            return Decompress(buf, 0, buf.Length, buf.Length * 3);
+        }
+
         public byte[] Decompress(byte[] buf, int offset, int len, int outputlen)
         {
             byte[] output = new byte[outputlen];

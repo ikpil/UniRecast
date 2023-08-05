@@ -1,5 +1,7 @@
 /*
-recast4j copyright (c) 2021 Piotr Piastucki piotr@jtilia.org
+Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
+DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -16,27 +18,12 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-using System;
 using DotRecast.Core;
-using K4os.Compression.LZ4;
 
-namespace DotRecast.Detour.Dynamic.Io
+namespace DotRecast.Detour.TileCache.Io.Compress
 {
-    public class LZ4VoxelTileCompressor
+    public interface IDtTileCacheCompressorFactory
     {
-        public byte[] Decompress(byte[] data)
-        {
-            int compressedSize = ByteUtils.GetIntBE(data, 0);
-            return LZ4Pickler.Unpickle(data.AsSpan(4, compressedSize));
-        }
-
-        public byte[] Compress(byte[] data)
-        {
-            byte[] compressed = LZ4Pickler.Pickle(data, LZ4Level.L12_MAX);
-            byte[] result = new byte[4 + compressed.Length];
-            ByteUtils.PutInt(compressed.Length, result, 0, RcByteOrder.BIG_ENDIAN);
-            Array.Copy(compressed, 0, result, 4, compressed.Length);
-            return result;
-        }
+        IRcCompressor Get(bool cCompatibility);
     }
 }
