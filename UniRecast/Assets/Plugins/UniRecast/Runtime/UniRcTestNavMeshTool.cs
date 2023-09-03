@@ -1,4 +1,5 @@
-﻿using DotRecast.Recast.Toolset.Tools;
+﻿using DotRecast.Recast.Toolset.Builder;
+using DotRecast.Recast.Toolset.Tools;
 using UnityEngine;
 
 namespace UniRecast
@@ -17,7 +18,7 @@ namespace UniRecast
         private bool constrainByCircle = true;
 
         [SerializeField]
-        private int includeFlags = -1;
+        private int includeFlags = SampleAreaModifications.SAMPLE_POLYFLAGS_ALL;
         
         [SerializeField]
         private int excludeFlags = 0;

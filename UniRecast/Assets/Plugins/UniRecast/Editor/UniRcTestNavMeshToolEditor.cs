@@ -9,11 +9,9 @@ using UnityEngine;
 
 namespace UniRecast.Editor
 {
-
-
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcTestNavMeshTool))]
-    public class UniRcTestNavMeshToolEditor : UnityEditor.Editor
+    public class UniRcTestNavMeshToolEditor : UniRcToolEditor
     {
         private SerializedProperty _selectedModeIdx;
         private SerializedProperty _selectedStraightPathOptionIdx;
@@ -32,9 +30,8 @@ namespace UniRecast.Editor
             _includeFlags = serializedObject.SafeFindProperty(nameof(_includeFlags));
             _excludeFlags = serializedObject.SafeFindProperty(nameof(_excludeFlags));
         }
-
-
-        public override void OnInspectorGUI()
+        
+        protected override void Layout()
         {
             var surface = target as UniRcTestNavMeshTool;
             if (surface is null)

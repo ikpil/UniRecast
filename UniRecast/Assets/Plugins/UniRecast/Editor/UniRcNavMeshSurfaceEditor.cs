@@ -8,7 +8,7 @@ namespace UniRecast.Editor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcNavMeshSurface))]
-    public class UniRcNavMeshSurfaceEditor : UnityEditor.Editor
+    public class UniRcNavMeshSurfaceEditor : UniRcToolEditor
     {
         SerializedProperty NavMesh;
 
@@ -142,7 +142,7 @@ namespace UniRecast.Editor
             surface.Bake();
         }
 
-        public override void OnInspectorGUI()
+        protected override void Layout()
         {
             var surface = target as UniRcNavMeshSurface;
             if (surface is null)
