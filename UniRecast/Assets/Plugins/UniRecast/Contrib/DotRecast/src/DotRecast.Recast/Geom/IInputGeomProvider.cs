@@ -18,17 +18,29 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+using System;
 using System.Collections.Generic;
 using DotRecast.Core;
 
 namespace DotRecast.Recast.Geom
 {
-    public interface IInputGeomProvider : IConvexVolumeProvider
+    public interface IInputGeomProvider
     {
+        RcTriMesh GetMesh();
         RcVec3f GetMeshBoundsMin();
 
         RcVec3f GetMeshBoundsMax();
 
         IEnumerable<RcTriMesh> Meshes();
+        
+        // convex volume
+        void AddConvexVolume(RcConvexVolume convexVolume);
+        IList<RcConvexVolume> ConvexVolumes();
+
+        // off mesh connections
+        public List<RcOffMeshConnection> GetOffMeshConnections();
+        public void AddOffMeshConnection(RcVec3f start, RcVec3f end, float radius, bool bidir, int area, int flags);
+        public void RemoveOffMeshConnections(Predicate<RcOffMeshConnection> filter);
+
     }
 }

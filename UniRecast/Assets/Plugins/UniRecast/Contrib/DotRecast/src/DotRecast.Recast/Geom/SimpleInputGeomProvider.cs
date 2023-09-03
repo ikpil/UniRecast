@@ -31,6 +31,7 @@ namespace DotRecast.Recast.Geom
         public readonly float[] normals;
         private RcVec3f bmin;
         private RcVec3f bmax;
+
         private readonly List<RcConvexVolume> volumes = new List<RcConvexVolume>();
         private readonly RcTriMesh _mesh;
 
@@ -80,6 +81,11 @@ namespace DotRecast.Recast.Geom
             _mesh = new RcTriMesh(vertices, faces);
         }
 
+        public RcTriMesh GetMesh()
+        {
+            return _mesh;
+        }
+
         public RcVec3f GetMeshBoundsMin()
         {
             return bmin;
@@ -102,12 +108,31 @@ namespace DotRecast.Recast.Geom
             vol.hmax = maxh;
             vol.verts = verts;
             vol.areaMod = areaMod;
-            volumes.Add(vol);
+        }
+
+        public void AddConvexVolume(RcConvexVolume convexVolume)
+        {
+            volumes.Add(convexVolume);
         }
 
         public IEnumerable<RcTriMesh> Meshes()
         {
             return RcImmutableArray.Create(_mesh);
+        }
+
+        public List<RcOffMeshConnection> GetOffMeshConnections()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddOffMeshConnection(RcVec3f start, RcVec3f end, float radius, bool bidir, int area, int flags)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveOffMeshConnections(Predicate<RcOffMeshConnection> filter)
+        {
+            throw new NotImplementedException();
         }
 
         public void CalculateNormals()

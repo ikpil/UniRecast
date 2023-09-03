@@ -18,6 +18,7 @@ freely, subject to the following restrictions:
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using DotRecast.Recast.Geom;
 
@@ -25,18 +26,18 @@ namespace DotRecast.Recast
 {
     public static class ObjImporter
     {
-        public static IInputGeomProvider Load(byte[] chunck)
+        public static IInputGeomProvider Load(byte[] chunk)
         {
-            var context = LoadContext(chunck);
+            var context = LoadContext(chunk);
             return new SimpleInputGeomProvider(context.vertexPositions, context.meshFaces);
         }
 
-        public static ObjImporterContext LoadContext(byte[] chunck)
+        public static ObjImporterContext LoadContext(byte[] chunk)
         {
             ObjImporterContext context = new ObjImporterContext();
             try
             {
-                using StreamReader reader = new StreamReader(new MemoryStream(chunck));
+                using StreamReader reader = new StreamReader(new MemoryStream(chunk));
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -85,7 +86,13 @@ namespace DotRecast.Recast
                 throw new Exception("Invalid vector, expected 3 coordinates, found " + (v.Length - 1));
             }
 
-            return new float[] { float.Parse(v[1]), float.Parse(v[2]), float.Parse(v[3]) };
+            // fix - https://github.com/ikpil/DotRecast/issues/7
+            return new float[]
+            {
+                float.Parse(v[1], CultureInfo.InvariantCulture), 
+                float.Parse(v[2], CultureInfo.InvariantCulture), 
+                float.Parse(v[3], CultureInfo.InvariantCulture)
+            };
         }
 
         private static void ReadFace(string line, ObjImporterContext context)

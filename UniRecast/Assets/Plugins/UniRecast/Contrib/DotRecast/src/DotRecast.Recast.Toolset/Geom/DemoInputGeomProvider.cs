@@ -32,8 +32,9 @@ namespace DotRecast.Recast.Toolset.Geom
         public readonly float[] normals;
         private readonly RcVec3f bmin;
         private readonly RcVec3f bmax;
+
         private readonly List<RcConvexVolume> _convexVolumes = new List<RcConvexVolume>();
-        private readonly List<DemoOffMeshConnection> _offMeshConnections = new List<DemoOffMeshConnection>();
+        private readonly List<RcOffMeshConnection> _offMeshConnections = new List<RcOffMeshConnection>();
         private readonly RcTriMesh _mesh;
 
         public DemoInputGeomProvider(List<float> vertexPositions, List<int> meshFaces) :
@@ -58,6 +59,11 @@ namespace DotRecast.Recast.Toolset.Geom
             }
 
             _mesh = new RcTriMesh(vertices, faces);
+        }
+
+        public RcTriMesh GetMesh()
+        {
+            return _mesh;
         }
 
         public RcVec3f GetMeshBoundsMin()
@@ -109,17 +115,17 @@ namespace DotRecast.Recast.Toolset.Geom
             return RcImmutableArray.Create(_mesh);
         }
 
-        public List<DemoOffMeshConnection> GetOffMeshConnections()
+        public List<RcOffMeshConnection> GetOffMeshConnections()
         {
             return _offMeshConnections;
         }
 
         public void AddOffMeshConnection(RcVec3f start, RcVec3f end, float radius, bool bidir, int area, int flags)
         {
-            _offMeshConnections.Add(new DemoOffMeshConnection(start, end, radius, bidir, area, flags));
+            _offMeshConnections.Add(new RcOffMeshConnection(start, end, radius, bidir, area, flags));
         }
 
-        public void RemoveOffMeshConnections(Predicate<DemoOffMeshConnection> filter)
+        public void RemoveOffMeshConnections(Predicate<RcOffMeshConnection> filter)
         {
             //offMeshConnections.RetainAll(offMeshConnections.Stream().Filter(c -> !filter.Test(c)).Collect(ToList()));
             _offMeshConnections.RemoveAll(filter); // TODO : 확인 필요
@@ -128,7 +134,7 @@ namespace DotRecast.Recast.Toolset.Geom
         public bool RaycastMesh(RcVec3f src, RcVec3f dst, out float tmin)
         {
             tmin = 1.0f;
-            
+
             // Prune hit ray.
             if (!Intersections.IsectSegAABB(src, dst, bmin, bmax, out var btmin, out var btmax))
             {
@@ -195,7 +201,7 @@ namespace DotRecast.Recast.Toolset.Geom
             volume.areaMod = areaMod;
             AddConvexVolume(volume);
         }
-        
+
         public void AddConvexVolume(RcConvexVolume volume)
         {
             _convexVolumes.Add(volume);
@@ -205,7 +211,7 @@ namespace DotRecast.Recast.Toolset.Geom
         {
             _convexVolumes.Clear();
         }
-        
+
         private static int[] MapFaces(List<int> meshFaces)
         {
             int[] faces = new int[meshFaces.Count];
