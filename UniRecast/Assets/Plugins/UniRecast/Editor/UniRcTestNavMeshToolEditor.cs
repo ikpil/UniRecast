@@ -9,25 +9,6 @@ using UnityEngine;
 
 namespace UniRecast.Editor
 {
-    public class RcStraightPathOption
-    {
-        public static readonly RcStraightPathOption None = new RcStraightPathOption(0, "None");
-        public static readonly RcStraightPathOption AreaCrossings = new RcStraightPathOption(DtNavMeshQuery.DT_STRAIGHTPATH_AREA_CROSSINGS, "Area");
-        public static readonly RcStraightPathOption AllCrossings = new RcStraightPathOption(DtNavMeshQuery.DT_STRAIGHTPATH_ALL_CROSSINGS, "All");
-
-        public static readonly RcImmutableArray<RcStraightPathOption> Values = RcImmutableArray.Create(
-            None, AreaCrossings, AllCrossings
-        );
-
-        public readonly int Value;
-        public readonly string Label;
-
-        private RcStraightPathOption(int value, string label)
-        {
-            Value = value;
-            Label = label;
-        }
-    }
 
 
     [CanEditMultipleObjects]
@@ -41,7 +22,7 @@ namespace UniRecast.Editor
         private SerializedProperty _excludeFlags;
 
         private static readonly string[] ModeLabels = RcTestNavmeshToolMode.Values.Select(x => x.Label).ToArray();
-        private static readonly string[] StraightPathOptionLabels = RcStraightPathOption.Values.Select(x => x.Label).ToArray();
+        private static readonly string[] StraightPathOptionLabels = DtStraightPathOption.Values.Select(x => x.Label).ToArray();
 
         private void OnEnable()
         {
@@ -89,7 +70,7 @@ namespace UniRecast.Editor
                     _selectedStraightPathOptionIdx.intValue = selectedStraightPathOptionIdx;
                 }
 
-                var straightPathOption = RcStraightPathOption.Values[selectedStraightPathOptionIdx];
+                var straightPathOption = DtStraightPathOption.Values[selectedStraightPathOptionIdx];
             }
 
             if (RcTestNavmeshToolMode.PATHFIND_SLICED == mode)

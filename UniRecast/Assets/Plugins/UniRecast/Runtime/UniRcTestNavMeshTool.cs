@@ -14,10 +14,10 @@ namespace UniRecast
         private int selectedStraightPathOptionIdx = 0;
 
         [SerializeField]
-        private bool constrainByCircle = false;
+        private bool constrainByCircle = true;
 
         [SerializeField]
-        private int includeFlags = 0;
+        private int includeFlags = -1;
         
         [SerializeField]
         private int excludeFlags = 0;
