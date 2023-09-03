@@ -44,10 +44,10 @@ namespace UniRecast.Editor
         
         // Tiles
         private SerializedProperty _tileSize;
-        static Color s_HandleColor = new Color(127f, 214f, 244f, 100f) / 255;
-        //static Color s_HandleColorSelected = new Color(127f, 63.0f, 244f, 210f) / 255;
-        private static Color s_HandleColorSelected = new Color(0.0f, 0.75f, 1f, 0.5f);
-        static Color s_HandleColorDisabled = new Color(127f * 0.75f, 214f * 0.75f, 244f * 0.75f, 100f) / 255;
+        private static readonly Color s_HandleColor = new Color(127f, 214f, 244f, 100f) / 255;
+        //private static readonly Color s_HandleColorSelected = new Color(127f, 63.0f, 244f, 210f) / 255;
+        private static readonly Color s_HandleColorSelected = new Color(0.0f, 0.75f, 1f, 0.5f);
+        private static readonly Color s_HandleColorDisabled = new Color(127f * 0.75f, 214f * 0.75f, 244f * 0.75f, 100f) / 255;
 
         private void OnDisable()
         {

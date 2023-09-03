@@ -6,6 +6,7 @@ using DotRecast.Core;
 using DotRecast.Detour;
 using DotRecast.Detour.Io;
 using DotRecast.Recast.Toolset;
+using Plugins.UniRecast.Extensions;
 using UnityEngine;
 
 namespace UniRecast
@@ -123,10 +124,11 @@ namespace UniRecast
 
         public void Bake()
         {
-            Bake(ToBuildSettings());
+            var setting = ToBuildSettings();
+            BakeFrom(setting);
         }
 
-        public void Bake(RcNavMeshBuildSettings setting)
+        public void BakeFrom(RcNavMeshBuildSettings setting)
         {
             // 현재 씬에 속해 있다면 해당 씬을 가져옵니다.
             var currentScene = gameObject.scene;
@@ -135,6 +137,12 @@ namespace UniRecast
             GameObject[] allGameObjects = currentScene.GetRootGameObjects();
 
             var targets = GetNavMeshSurfaceTargets(allGameObjects);
+            if (0 >= targets.Count)
+            {
+                Debug.LogError($"not found navmesh targets");
+                return;
+            }
+
             var combinedTarget = targets.ToCombinedNavMeshSurfaceTarget(currentScene.name);
             var mesh = combinedTarget.ToMesh();
             mesh.SaveFile();
@@ -149,16 +157,22 @@ namespace UniRecast
 
         public List<UniRcNavMeshSurfaceTarget> GetNavMeshSurfaceTargets(IList<GameObject> gameObjects)
         {
-            // 터레인 추출
+            // force terrain
             var terrainTargets = gameObjects
                 .SelectMany(x => x.GetComponentsInChildren<Terrain>())
                 .Where(x => x.gameObject.activeSelf && x.isActiveAndEnabled)
                 .Select(x => x.ToUniRcSurfaceSource());
 
-            var meshFilterTargets = gameObjects
-                .SelectMany(x => x.GetComponentsInChildren<MeshFilter>())
-                .Where(x => x.CompareTag(UniRcConst.Tag))
+            // all tag objects
+            var navmeshTagObjects = gameObjects
+                .SelectMany(x => x.ToHierarchyList())
                 .Where(x => x.gameObject.activeSelf)
+                .Where(x => x.CompareTag(UniRcConst.Tag))
+                .ToList();
+
+            var meshFilterTargets = navmeshTagObjects
+                .SelectMany(x => x.GetComponentsInChildren<MeshFilter>())
+                .Distinct()
                 .Select(x => x.ToUniRcSurfaceSource());
 
             var targets = new List<UniRcNavMeshSurfaceTarget>();
