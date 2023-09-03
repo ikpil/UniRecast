@@ -151,61 +151,61 @@ namespace UniRecast.Editor
             // Draw image
             const float diagramHeight = 80.0f;
             Rect agentDiagramRect = EditorGUILayout.GetControlRect(false, diagramHeight);
-            UniRcEditorHelpers.DrawAgentDiagram(agentDiagramRect, _agentRadius.floatValue, _agentHeight.floatValue, _agentMaxClimb.floatValue, _agentMaxSlope.floatValue);
+            UniRcGui.DrawAgentDiagram(agentDiagramRect, _agentRadius.floatValue, _agentHeight.floatValue, _agentMaxClimb.floatValue, _agentMaxSlope.floatValue);
 
-            EditorGUILayout.LabelField("Rasterization");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderFloat("Cell Size", _cellSize, 0.01f, 1f, 0.01f);
-            UniRcEditorHelpers.SliderFloat("Cell Height", _cellHeight, 0.01f, 1f, 0.01f);
-            //EditorGUILayout.LabelField($"Voxels {voxels[0]} x {voxels[1]}");
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Rasterization");
+            UniRcGui.Separator();
+            UniRcGui.SliderFloat("Cell Size", _cellSize, 0.01f, 1f, 0.01f);
+            UniRcGui.SliderFloat("Cell Height", _cellHeight, 0.01f, 1f, 0.01f);
+            //UniRcEditorHelpers.Text($"Voxels {voxels[0]} x {voxels[1]}");
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Agent");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderFloat("Height", _agentHeight, 0.1f, 5f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Radius", _agentRadius, 0.1f, 5f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Max Climb", _agentMaxClimb, 0.1f, 5f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Max Slope", _agentMaxSlope, 1f, 90f, 1);
-            UniRcEditorHelpers.SliderFloat("Max Acceleration", _agentMaxAcceleration, 8f, 999f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Max Speed", _agentMaxSpeed, 1f, 10f, 0.1f);
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Agent");
+            UniRcGui.Separator();
+            UniRcGui.SliderFloat("Height", _agentHeight, 0.1f, 5f, 0.1f);
+            UniRcGui.SliderFloat("Radius", _agentRadius, 0.1f, 5f, 0.1f);
+            UniRcGui.SliderFloat("Max Climb", _agentMaxClimb, 0.1f, 5f, 0.1f);
+            UniRcGui.SliderFloat("Max Slope", _agentMaxSlope, 1f, 90f, 1);
+            UniRcGui.SliderFloat("Max Acceleration", _agentMaxAcceleration, 8f, 999f, 0.1f);
+            UniRcGui.SliderFloat("Max Speed", _agentMaxSpeed, 1f, 10f, 0.1f);
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Region");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderInt("Min Region Size", _minRegionSize, 1, 150);
-            UniRcEditorHelpers.SliderInt("Merged Region Size", _mergedRegionSize, 1, 150);
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Region");
+            UniRcGui.Separator();
+            UniRcGui.SliderInt("Min Region Size", _minRegionSize, 1, 150);
+            UniRcGui.SliderInt("Merged Region Size", _mergedRegionSize, 1, 150);
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Filtering");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.Checkbox("Low Hanging Obstacles", _filterLowHangingObstacles);
-            UniRcEditorHelpers.Checkbox("Ledge Spans", _filterLedgeSpans);
-            UniRcEditorHelpers.Checkbox("Walkable Low Height Spans", _filterWalkableLowHeightSpans);
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Filtering");
+            UniRcGui.Separator();
+            UniRcGui.Checkbox("Low Hanging Obstacles", _filterLowHangingObstacles);
+            UniRcGui.Checkbox("Ledge Spans", _filterLedgeSpans);
+            UniRcGui.Checkbox("Walkable Low Height Spans", _filterWalkableLowHeightSpans);
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Polygonization");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderFloat("Max Edge Length", _edgeMaxLen, 0f, 50f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Max Edge Error", _edgeMaxError, 0.1f, 3f, 0.1f);
-            UniRcEditorHelpers.SliderInt("Vert Per Poly", _vertsPerPoly, 3, 12);
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Polygonization");
+            UniRcGui.Separator();
+            UniRcGui.SliderFloat("Max Edge Length", _edgeMaxLen, 0f, 50f, 0.1f);
+            UniRcGui.SliderFloat("Max Edge Error", _edgeMaxError, 0.1f, 3f, 0.1f);
+            UniRcGui.SliderInt("Vert Per Poly", _vertsPerPoly, 3, 12);
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Detail Mesh");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderFloat("Sample Distance", _detailSampleDist, 0f, 16f, 0.1f);
-            UniRcEditorHelpers.SliderFloat("Max Sample Error", _detailSampleMaxError, 0f, 16f, 0.1f);
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Detail Mesh");
+            UniRcGui.Separator();
+            UniRcGui.SliderFloat("Sample Distance", _detailSampleDist, 0f, 16f, 0.1f);
+            UniRcGui.SliderFloat("Max Sample Error", _detailSampleMaxError, 0f, 16f, 0.1f);
+            UniRcGui.Separator();
 
-            EditorGUILayout.LabelField("Tiling");
-            EditorGUILayout.Separator();
-            UniRcEditorHelpers.SliderInt("Tile Size", _tileSize, 16, 1024, 16);
+            UniRcGui.Text("Tiling");
+            UniRcGui.Separator();
+            UniRcGui.SliderInt("Tile Size", _tileSize, 16, 1024, 16);
             
-            // EditorGUILayout.LabelField($"Tiles {tiles[0]} x {tiles[1]}");
-            // EditorGUILayout.LabelField($"Max Tiles {maxTiles}");
-            // EditorGUILayout.LabelField($"Max Polys {maxPolys}");
+            // UniRcEditorHelpers.Text($"Tiles {tiles[0]} x {tiles[1]}");
+            // UniRcEditorHelpers.Text($"Max Tiles {maxTiles}");
+            // UniRcEditorHelpers.Text($"Max Polys {maxPolys}");
             //}
 
-            EditorGUILayout.Separator();
+            UniRcGui.Separator();
 
             serializedObject.ApplyModifiedProperties();
 

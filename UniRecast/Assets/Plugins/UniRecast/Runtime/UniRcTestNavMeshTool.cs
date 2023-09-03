@@ -12,5 +12,14 @@ namespace UniRecast
 
         [SerializeField]
         private int selectedStraightPathOptionIdx = 0;
+
+        [SerializeField]
+        private bool constrainByCircle = false;
+
+        [SerializeField]
+        private int includeFlags = 0;
+        
+        [SerializeField]
+        private int excludeFlags = 0;
     }
 }

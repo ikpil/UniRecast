@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using DotRecast.Core;
 using DotRecast.Detour;
+using DotRecast.Recast.Toolset.Builder;
 using DotRecast.Recast.Toolset.Tools;
 using Plugins.UniRecast.Extensions;
 using UnityEditor;
@@ -35,6 +36,9 @@ namespace UniRecast.Editor
     {
         private SerializedProperty _selectedModeIdx;
         private SerializedProperty _selectedStraightPathOptionIdx;
+        private SerializedProperty _constrainByCircle;
+        private SerializedProperty _includeFlags;
+        private SerializedProperty _excludeFlags;
 
         private static readonly string[] ModeLabels = RcTestNavmeshToolMode.Values.Select(x => x.Label).ToArray();
         private static readonly string[] StraightPathOptionLabels = RcStraightPathOption.Values.Select(x => x.Label).ToArray();
@@ -43,6 +47,9 @@ namespace UniRecast.Editor
         {
             _selectedModeIdx = serializedObject.SafeFindProperty(nameof(_selectedModeIdx));
             _selectedStraightPathOptionIdx = serializedObject.SafeFindProperty(nameof(_selectedStraightPathOptionIdx));
+            _constrainByCircle = serializedObject.SafeFindProperty(nameof(_constrainByCircle));
+            _includeFlags = serializedObject.SafeFindProperty(nameof(_includeFlags));
+            _excludeFlags = serializedObject.SafeFindProperty(nameof(_excludeFlags));
         }
 
 
@@ -52,8 +59,8 @@ namespace UniRecast.Editor
             if (surface is null)
                 return;
 
-            EditorGUILayout.LabelField("Mode");
-            EditorGUILayout.Separator();
+            UniRcGui.Text("Mode");
+            UniRcGui.Separator();
             EditorGUI.BeginChangeCheck();
             int selectedModeIdx = GUILayout.SelectionGrid(_selectedModeIdx.intValue, ModeLabels, 1, EditorStyles.radioButton);
             if (EditorGUI.EndChangeCheck())
@@ -64,8 +71,8 @@ namespace UniRecast.Editor
 
             // selecting mode
             var mode = RcTestNavmeshToolMode.Values[selectedModeIdx];
-            EditorGUILayout.LabelField(mode.Label);
-            EditorGUILayout.Separator();
+            UniRcGui.Text(mode.Label);
+            UniRcGui.Separator();
 
             if (RcTestNavmeshToolMode.PATHFIND_FOLLOW == mode)
             {
@@ -73,8 +80,8 @@ namespace UniRecast.Editor
 
             if (RcTestNavmeshToolMode.PATHFIND_STRAIGHT == mode)
             {
-                EditorGUILayout.LabelField("Vertices at crossings");
-                EditorGUILayout.Separator();
+                UniRcGui.Text("Vertices at crossings");
+                UniRcGui.Separator();
                 EditorGUI.BeginChangeCheck();
                 int selectedStraightPathOptionIdx = GUILayout.SelectionGrid(_selectedStraightPathOptionIdx.intValue, StraightPathOptionLabels, 1, EditorStyles.radioButton);
                 if (EditorGUI.EndChangeCheck())
@@ -99,8 +106,7 @@ namespace UniRecast.Editor
 
             if (RcTestNavmeshToolMode.FIND_POLYS_IN_CIRCLE == mode)
             {
-                //UniRcEditorHelpers.Checkbox("Constrained", ref s);
-                //ImGui.Checkbox("Constrained", ref _option.constrainByCircle);
+                UniRcGui.Checkbox("Constrained", _constrainByCircle);
             }
 
             if (RcTestNavmeshToolMode.FIND_POLYS_IN_SHAPE == mode)
@@ -115,33 +121,34 @@ namespace UniRecast.Editor
             {
             }
 
-            // ImGui.Text("Common");
-            // ImGui.Separator();
-            //
-            // ImGui.Text("Include Flags");
-            // ImGui.Separator();
-            // ImGui.CheckboxFlags("Walk", ref _option.includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_WALK);
-            // ImGui.CheckboxFlags("Swim", ref _option.includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_SWIM);
-            // ImGui.CheckboxFlags("Door", ref _option.includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_DOOR);
-            // ImGui.CheckboxFlags("Jump", ref _option.includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_JUMP);
-            // ImGui.NewLine();
+            UniRcGui.Text("Common");
+            UniRcGui.Separator();
+
+            UniRcGui.Text("Include Flags");
+            UniRcGui.Separator();
+            UniRcGui.CheckboxFlags("Walk", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_WALK);
+            UniRcGui.CheckboxFlags("Swim", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_SWIM);
+            UniRcGui.CheckboxFlags("Door", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_DOOR);
+            UniRcGui.CheckboxFlags("Jump", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_JUMP);
+            UniRcGui.Separator();
+            UniRcGui.NewLine();
             //
             // m_filter.SetIncludeFlags(_option.includeFlags);
             //
-            // ImGui.Text("Exclude Flags");
-            // ImGui.Separator();
-            // ImGui.CheckboxFlags("Walk", ref _option.excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_WALK);
-            // ImGui.CheckboxFlags("Swim", ref _option.excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_SWIM);
-            // ImGui.CheckboxFlags("Door", ref _option.excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_DOOR);
-            // ImGui.CheckboxFlags("Jump", ref _option.excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_JUMP);
-            // ImGui.NewLine();
+            UniRcGui.Text("Exclude Flags");
+            UniRcGui.Separator();
+            UniRcGui.CheckboxFlags("Walk", _excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_WALK);
+            UniRcGui.CheckboxFlags("Swim", _excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_SWIM);
+            UniRcGui.CheckboxFlags("Door", _excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_DOOR);
+            UniRcGui.CheckboxFlags("Jump", _excludeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_JUMP);
+            UniRcGui.NewLine();
             //
             // m_filter.SetExcludeFlags(_option.excludeFlags);
             //
             // bool previousEnableRaycast = _option.enableRaycast;
             // ImGui.Checkbox("Raycast shortcuts", ref _option.enableRaycast);
             //
-            
+
             serializedObject.ApplyModifiedProperties();
             // if (previousToolMode != _option.mode || _option.straightPathOptions != previousStraightPathOptions
             //                                      || previousIncludeFlags != _option.includeFlags || previousExcludeFlags != _option.excludeFlags

@@ -471,6 +471,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d5778fe4a784d809601086648407545, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedModeIdx: 1
+  selectedStraightPathOptionIdx: 0
+  constrainByCircle: 1
+  includeFlags: -1
+  excludeFlags: 0
 --- !u!4 &1736068888
 Transform:
   m_ObjectHideFlags: 0

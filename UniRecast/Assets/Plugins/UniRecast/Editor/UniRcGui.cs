@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UniRecast.Editor
 {
-    public static class UniRcEditorHelpers
+    public static class UniRcGui
     {
         public static void DrawAgentDiagram(Rect rect, float agentRadius, float agentHeight, float agentClimb, float agentSlope)
         {
@@ -118,14 +118,54 @@ namespace UniRecast.Editor
             property.intValue = SnapInt(property.intValue, snapValue);
         }
 
-        public static void Checkbox(string label, SerializedProperty property)
+        public static bool Checkbox(string label, SerializedProperty property)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label);
             GUILayout.FlexibleSpace();
-            var v = EditorGUILayout.Toggle(property.boolValue, GUILayout.ExpandWidth(true));
-            property.boolValue = v;
+            bool perv = property.boolValue;
+            var v = EditorGUILayout.Toggle(perv, GUILayout.ExpandWidth(true));
+            if (perv != v)
+            {
+                property.boolValue = v;
+            }
+
             EditorGUILayout.EndHorizontal();
+
+            return v;
+        }
+
+        public static int CheckboxFlags(string label, SerializedProperty property, int flags)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label);
+            GUILayout.FlexibleSpace();
+            bool perv = 0 != (property.intValue & flags);
+            var v = EditorGUILayout.Toggle(perv, GUILayout.ExpandWidth(true));
+            if (perv != v)
+            {
+                property.intValue = v 
+                    ? property.intValue | flags 
+                    : property.intValue & ~flags;
+            }
+
+            EditorGUILayout.EndHorizontal();
+            return property.intValue;
+        }
+
+        public static void NewLine()
+        {
+            EditorGUILayout.LabelField(" ");
+        }
+
+        public static void Separator()
+        {
+            EditorGUILayout.LabelField("-");
+        }
+
+        public static void Text(string label)
+        {
+            EditorGUILayout.LabelField(label);
         }
     }
 }
