@@ -61,6 +61,16 @@ public class Program
             var destPath = $"{destRoot}/src/{proj.Name}";
             SyncFiles(sourcePath, destPath, ignorePaths, "*.cs");
         }
+        
+        // 몇몇 필요한 리소스 복사 하기
+        string destResourcePath = destRoot + "/resources";
+        if (!Directory.Exists(destResourcePath))
+        {
+            Directory.CreateDirectory(destResourcePath);
+        }
+        
+        string sourceResourcePath = "../../../DotRecast/resources/nav_test.obj";
+        File.Copy(sourceResourcePath, destResourcePath + "/nav_test.obj", true);
     }
 
     public static string GetProgramDirectory(string fileName)
