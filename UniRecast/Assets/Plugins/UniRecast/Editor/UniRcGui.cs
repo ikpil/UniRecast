@@ -144,8 +144,8 @@ namespace UniRecast.Editor
             var v = EditorGUILayout.Toggle(perv, GUILayout.ExpandWidth(true));
             if (perv != v)
             {
-                property.intValue = v 
-                    ? property.intValue | flags 
+                property.intValue = v
+                    ? property.intValue | flags
                     : property.intValue & ~flags;
             }
 
@@ -166,6 +166,16 @@ namespace UniRecast.Editor
         public static void Text(string label)
         {
             EditorGUILayout.LabelField(label);
+        }
+
+        public static bool Button(string label)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(EditorGUIUtility.labelWidth);
+            bool clicked = GUILayout.Button(label);
+            GUILayout.EndHorizontal();
+
+            return clicked;
         }
     }
 }

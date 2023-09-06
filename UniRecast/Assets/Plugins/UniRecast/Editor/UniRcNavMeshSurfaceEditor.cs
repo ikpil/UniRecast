@@ -41,10 +41,12 @@ namespace UniRecast.Editor
         // Detail Mesh
         private SerializedProperty _detailSampleDist;
         private SerializedProperty _detailSampleMaxError;
-        
+
         // Tiles
         private SerializedProperty _tileSize;
+
         private static readonly Color s_HandleColor = new Color(127f, 214f, 244f, 100f) / 255;
+
         //private static readonly Color s_HandleColorSelected = new Color(127f, 63.0f, 244f, 210f) / 255;
         private static readonly Color s_HandleColorSelected = new Color(0.0f, 0.75f, 1f, 0.5f);
         private static readonly Color s_HandleColorDisabled = new Color(127f * 0.75f, 214f * 0.75f, 244f * 0.75f, 100f) / 255;
@@ -86,7 +88,7 @@ namespace UniRecast.Editor
             // Detail Mesh
             _detailSampleDist = serializedObject.FindProperty(nameof(_detailSampleDist));
             _detailSampleMaxError = serializedObject.FindProperty(nameof(_detailSampleMaxError));
-            
+
             // Tiles
             _tileSize = serializedObject.FindProperty(nameof(_tileSize));
         }
@@ -125,7 +127,7 @@ namespace UniRecast.Editor
             // Detail Mesh
             _detailSampleDist.floatValue = bs.detailSampleDist;
             _detailSampleMaxError.floatValue = bs.detailSampleMaxError;
-            
+
             // Tiles
             _tileSize.intValue = bs.tileSize;
         }
@@ -199,7 +201,7 @@ namespace UniRecast.Editor
             UniRcGui.Text("Tiling");
             UniRcGui.Separator();
             UniRcGui.SliderInt("Tile Size", _tileSize, 16, 1024, 16);
-            
+
             // UniRcEditorHelpers.Text($"Tiles {tiles[0]} x {tiles[1]}");
             // UniRcEditorHelpers.Text($"Max Tiles {maxTiles}");
             // UniRcEditorHelpers.Text($"Max Polys {maxPolys}");
@@ -211,21 +213,16 @@ namespace UniRecast.Editor
 
             using (new EditorGUI.DisabledScope(Application.isPlaying))
             {
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(EditorGUIUtility.labelWidth);
-
-                if (GUILayout.Button("Clear"))
+                if (UniRcGui.Button("Clear"))
                 {
                     Clear();
                     serializedObject.ApplyModifiedProperties();
                 }
 
-                if (GUILayout.Button("Bake"))
+                if (UniRcGui.Button("Bake"))
                 {
                     Bake();
                 }
-
-                GUILayout.EndHorizontal();
             }
         }
 

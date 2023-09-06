@@ -24,11 +24,11 @@ namespace UniRecast.Editor
 
         private void OnEnable()
         {
-            _selectedModeIdx = serializedObject.SafeFindProperty(nameof(_selectedModeIdx));
-            _selectedStraightPathOptionIdx = serializedObject.SafeFindProperty(nameof(_selectedStraightPathOptionIdx));
-            _constrainByCircle = serializedObject.SafeFindProperty(nameof(_constrainByCircle));
-            _includeFlags = serializedObject.SafeFindProperty(nameof(_includeFlags));
-            _excludeFlags = serializedObject.SafeFindProperty(nameof(_excludeFlags));
+            _selectedModeIdx = serializedObject.FindPropertySafe(nameof(_selectedModeIdx));
+            _selectedStraightPathOptionIdx = serializedObject.FindPropertySafe(nameof(_selectedStraightPathOptionIdx));
+            _constrainByCircle = serializedObject.FindPropertySafe(nameof(_constrainByCircle));
+            _includeFlags = serializedObject.FindPropertySafe(nameof(_includeFlags));
+            _excludeFlags = serializedObject.FindPropertySafe(nameof(_excludeFlags));
         }
 
         protected override void Layout()
