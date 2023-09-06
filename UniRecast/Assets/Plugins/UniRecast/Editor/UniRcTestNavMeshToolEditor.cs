@@ -30,7 +30,7 @@ namespace UniRecast.Editor
             _includeFlags = serializedObject.SafeFindProperty(nameof(_includeFlags));
             _excludeFlags = serializedObject.SafeFindProperty(nameof(_excludeFlags));
         }
-        
+
         protected override void Layout()
         {
             var surface = target as UniRcTestNavMeshTool;
@@ -40,7 +40,7 @@ namespace UniRecast.Editor
             UniRcGui.Text("Mode");
             UniRcGui.Separator();
             EditorGUI.BeginChangeCheck();
-            int selectedModeIdx = GUILayout.SelectionGrid(_selectedModeIdx.intValue, ModeLabels, 1, EditorStyles.radioButton);
+            int selectedModeIdx = GUILayout.SelectionGrid(_selectedModeIdx.intValue, ModeLabels, 1, EditorStyles.radioButton, GUILayout.ExpandWidth(true));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedModeIdx.intValue = selectedModeIdx;
@@ -61,7 +61,7 @@ namespace UniRecast.Editor
                 UniRcGui.Text("Vertices at crossings");
                 UniRcGui.Separator();
                 EditorGUI.BeginChangeCheck();
-                int selectedStraightPathOptionIdx = GUILayout.SelectionGrid(_selectedStraightPathOptionIdx.intValue, StraightPathOptionLabels, 1, EditorStyles.radioButton);
+                int selectedStraightPathOptionIdx = GUILayout.SelectionGrid(_selectedStraightPathOptionIdx.intValue, StraightPathOptionLabels, 1, EditorStyles.radioButton, GUILayout.ExpandWidth(true));
                 if (EditorGUI.EndChangeCheck())
                 {
                     _selectedStraightPathOptionIdx.intValue = selectedStraightPathOptionIdx;
