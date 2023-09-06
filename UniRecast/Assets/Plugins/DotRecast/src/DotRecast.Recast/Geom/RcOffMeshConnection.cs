@@ -20,48 +20,32 @@ freely, subject to the following restrictions:
 
 using DotRecast.Core;
 
-namespace DotRecast.Detour
+namespace DotRecast.Recast.Geom
 {
-    public class DtNodeQueue
+    public class RcOffMeshConnection
     {
-        private readonly RcSortedQueue<DtNode> m_heap = new RcSortedQueue<DtNode>((n1, n2) => n1.total.CompareTo(n2.total));
+        public readonly float[] verts;
+        public readonly float radius;
 
-        public int Count()
-        {
-            return m_heap.Count();
-        }
+        public readonly bool bidir;
+        public readonly int area;
 
-        public void Clear()
-        {
-            m_heap.Clear();
-        }
+        public readonly int flags;
+        public readonly int userId;
 
-        public DtNode Top()
+        public RcOffMeshConnection(RcVec3f start, RcVec3f end, float radius, bool bidir, int area, int flags)
         {
-            return m_heap.Top();
-        }
-
-        public DtNode Pop()
-        {
-            var node = Top();
-            m_heap.Remove(node);
-            return node;
-        }
-
-        public void Push(DtNode node)
-        {
-            m_heap.Enqueue(node);
-        }
-
-        public void Modify(DtNode node)
-        {
-            m_heap.Remove(node);
-            Push(node);
-        }
-
-        public bool IsEmpty()
-        {
-            return 0 == m_heap.Count();
+            verts = new float[6];
+            verts[0] = start.x;
+            verts[1] = start.y;
+            verts[2] = start.z;
+            verts[3] = end.x;
+            verts[4] = end.y;
+            verts[5] = end.z;
+            this.radius = radius;
+            this.bidir = bidir;
+            this.area = area;
+            this.flags = flags;
         }
     }
 }

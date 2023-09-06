@@ -48,7 +48,7 @@ public class Program
             throw new Exception("not found source directory");
         }
 
-        string destRoot = "../../UniRecast/Assets/Plugins/UniRecast/Contrib/DotRecast";
+        string destRoot = "../../UniRecast/Assets/Plugins/DotRecast";
         destRoot = Path.GetFullPath(destRoot);
         if (Directory.Exists(destRoot))
         {

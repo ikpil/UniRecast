@@ -18,69 +18,50 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-using System;
-using System.Collections.Generic;
+using DotRecast.Core;
 
-namespace DotRecast.Core
+namespace DotRecast.Detour
 {
-    public class RcSortedQueue<T>
+    public class DtNodeQueue
     {
-        private bool _dirty;
-        private readonly List<T> _items;
-        private readonly Comparison<T> _comparison;
-
-        public RcSortedQueue(Comparison<T> comparison)
-        {
-            _items = new List<T>();
-            _comparison = (x, y) => comparison.Invoke(x, y) * -1; // reverse
-        }
+        private readonly RcSortedQueue<DtNode> m_heap = new RcSortedQueue<DtNode>((n1, n2) => n1.total.CompareTo(n2.total));
 
         public int Count()
         {
-            return _items.Count;
+            return m_heap.Count();
         }
 
         public void Clear()
         {
-            _items.Clear();
+            m_heap.Clear();
         }
 
-        public T Top()
+        public DtNode Peek()
         {
-            if (_dirty)
-            {
-                _items.Sort(_comparison); // reverse
-                _dirty = false;
-            }
-
-            return _items[_items.Count - 1];
+            return m_heap.Peek();
         }
 
-        public T Dequeue()
+        public DtNode Pop()
         {
-            var node = Top();
-            _items.Remove(node);
+            var node = Peek();
+            m_heap.Remove(node);
             return node;
         }
 
-        public void Enqueue(T item)
+        public void Push(DtNode node)
         {
-            _items.Add(item);
-            _dirty = true;
+            m_heap.Enqueue(node);
         }
 
-        public void Remove(T item)
+        public void Modify(DtNode node)
         {
-            int idx = _items.FindLastIndex(x => item.Equals(x));
-            if (0 > idx)
-                return;
-
-            _items.RemoveAt(idx);
+            m_heap.Remove(node);
+            Push(node);
         }
 
         public bool IsEmpty()
         {
-            return 0 == _items.Count;
+            return 0 == m_heap.Count();
         }
     }
 }
