@@ -123,9 +123,9 @@ namespace UniRecast.Editor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label);
             GUILayout.FlexibleSpace();
-            bool perv = property.boolValue;
-            var v = EditorGUILayout.Toggle(perv, GUILayout.ExpandWidth(true));
-            if (perv != v)
+            bool prev = property.boolValue;
+            var v = EditorGUILayout.Toggle(prev, GUILayout.ExpandWidth(true));
+            if (prev != v)
             {
                 property.boolValue = v;
             }
@@ -140,9 +140,9 @@ namespace UniRecast.Editor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label);
             GUILayout.FlexibleSpace();
-            bool perv = 0 != (property.intValue & flags);
-            var v = EditorGUILayout.Toggle(perv, GUILayout.ExpandWidth(true));
-            if (perv != v)
+            bool prev = 0 != (property.intValue & flags);
+            var v = EditorGUILayout.Toggle(prev, GUILayout.ExpandWidth(true));
+            if (prev != v)
             {
                 property.intValue = v
                     ? property.intValue | flags
@@ -151,6 +151,21 @@ namespace UniRecast.Editor
 
             EditorGUILayout.EndHorizontal();
             return property.intValue;
+        }
+
+        public static void RadioButton(string label, SerializedProperty property, int btnValue)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label);
+            GUILayout.FlexibleSpace();
+            bool prev = property.intValue == btnValue;
+            var v = EditorGUILayout.Toggle(prev, EditorStyles.radioButton, GUILayout.ExpandWidth(true));
+            if (prev != v)
+            {
+                property.intValue = btnValue;
+            }
+
+            EditorGUILayout.EndHorizontal();
         }
 
         public static void NewLine()

@@ -9,10 +9,10 @@ namespace UniRecast
         private RcTestNavMeshTool _tool;
 
         [SerializeField]
-        private int selectedModeIdx = 0;
+        private int selectedMode = 0;
 
         [SerializeField]
-        private int selectedStraightPathOptionIdx = 0;
+        private int selectedStraightPathOption = 0;
 
         [SerializeField]
         private bool constrainByCircle = true;

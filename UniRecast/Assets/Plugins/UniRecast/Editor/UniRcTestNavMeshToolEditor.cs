@@ -13,19 +13,18 @@ namespace UniRecast.Editor
     [CustomEditor(typeof(UniRcTestNavMeshTool))]
     public class UniRcTestNavMeshToolEditor : UniRcToolEditor
     {
-        private SerializedProperty _selectedModeIdx;
-        private SerializedProperty _selectedStraightPathOptionIdx;
+        private SerializedProperty _selectedMode;
+        private SerializedProperty _selectedStraightPathOption;
         private SerializedProperty _constrainByCircle;
         private SerializedProperty _includeFlags;
         private SerializedProperty _excludeFlags;
 
         private static readonly string[] ModeLabels = RcTestNavmeshToolMode.Values.Select(x => x.Label).ToArray();
-        private static readonly string[] StraightPathOptionLabels = DtStraightPathOption.Values.Select(x => x.Label).ToArray();
 
         private void OnEnable()
         {
-            _selectedModeIdx = serializedObject.FindPropertySafe(nameof(_selectedModeIdx));
-            _selectedStraightPathOptionIdx = serializedObject.FindPropertySafe(nameof(_selectedStraightPathOptionIdx));
+            _selectedMode = serializedObject.FindPropertySafe(nameof(_selectedMode));
+            _selectedStraightPathOption = serializedObject.FindPropertySafe(nameof(_selectedStraightPathOption));
             _constrainByCircle = serializedObject.FindPropertySafe(nameof(_constrainByCircle));
             _includeFlags = serializedObject.FindPropertySafe(nameof(_includeFlags));
             _excludeFlags = serializedObject.FindPropertySafe(nameof(_excludeFlags));
@@ -39,16 +38,19 @@ namespace UniRecast.Editor
 
             UniRcGui.Text("Mode");
             UniRcGui.Separator();
-            EditorGUI.BeginChangeCheck();
-            int selectedModeIdx = GUILayout.SelectionGrid(_selectedModeIdx.intValue, ModeLabels, 1, EditorStyles.radioButton, GUILayout.ExpandWidth(true));
-            if (EditorGUI.EndChangeCheck())
-            {
-                _selectedModeIdx.intValue = selectedModeIdx;
-                // ...
-            }
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.PATHFIND_FOLLOW.Label, _selectedMode, RcTestNavmeshToolMode.PATHFIND_FOLLOW.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.PATHFIND_STRAIGHT.Label, _selectedMode, RcTestNavmeshToolMode.PATHFIND_STRAIGHT.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.PATHFIND_SLICED.Label, _selectedMode, RcTestNavmeshToolMode.PATHFIND_SLICED.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.DISTANCE_TO_WALL.Label, _selectedMode, RcTestNavmeshToolMode.DISTANCE_TO_WALL.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.RAYCAST.Label, _selectedMode, RcTestNavmeshToolMode.RAYCAST.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.FIND_POLYS_IN_CIRCLE.Label, _selectedMode, RcTestNavmeshToolMode.FIND_POLYS_IN_CIRCLE.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.FIND_POLYS_IN_SHAPE.Label, _selectedMode, RcTestNavmeshToolMode.FIND_POLYS_IN_SHAPE.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.FIND_LOCAL_NEIGHBOURHOOD.Label, _selectedMode, RcTestNavmeshToolMode.FIND_LOCAL_NEIGHBOURHOOD.Idx);
+            UniRcGui.RadioButton(RcTestNavmeshToolMode.RANDOM_POINTS_IN_CIRCLE.Label, _selectedMode, RcTestNavmeshToolMode.RANDOM_POINTS_IN_CIRCLE.Idx);
+            UniRcGui.NewLine();
 
             // selecting mode
-            var mode = RcTestNavmeshToolMode.Values[selectedModeIdx];
+            var mode = RcTestNavmeshToolMode.Values[_selectedMode.intValue];
             UniRcGui.Text(mode.Label);
             UniRcGui.Separator();
 
@@ -60,14 +62,10 @@ namespace UniRecast.Editor
             {
                 UniRcGui.Text("Vertices at crossings");
                 UniRcGui.Separator();
-                EditorGUI.BeginChangeCheck();
-                int selectedStraightPathOptionIdx = GUILayout.SelectionGrid(_selectedStraightPathOptionIdx.intValue, StraightPathOptionLabels, 1, EditorStyles.radioButton, GUILayout.ExpandWidth(true));
-                if (EditorGUI.EndChangeCheck())
-                {
-                    _selectedStraightPathOptionIdx.intValue = selectedStraightPathOptionIdx;
-                }
-
-                var straightPathOption = DtStraightPathOption.Values[selectedStraightPathOptionIdx];
+                UniRcGui.RadioButton(DtStraightPathOption.None.Label, _selectedStraightPathOption, DtStraightPathOption.None.Value);
+                UniRcGui.RadioButton(DtStraightPathOption.AreaCrossings.Label, _selectedStraightPathOption, DtStraightPathOption.AreaCrossings.Value);
+                UniRcGui.RadioButton(DtStraightPathOption.AllCrossings.Label, _selectedStraightPathOption, DtStraightPathOption.AllCrossings.Value);
+                //var straightPathOption = DtStraightPathOption.Values[_selectedStraightPathOption.intValue];
             }
 
             if (RcTestNavmeshToolMode.PATHFIND_SLICED == mode)

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DotRecast.Recast.Toolset.Builder;
 using UnityEngine;
 
 namespace UniRecast
@@ -14,5 +15,8 @@ namespace UniRecast
 
         [SerializeField]
         private float polyOffset = 0.0f;
+
+        [SerializeField]
+        private int areaTypeValue = SampleAreaModifications.SAMPLE_AREAMOD_GRASS.Value;
     }
 }

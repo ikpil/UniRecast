@@ -489,6 +489,7 @@ MonoBehaviour:
   boxHeight: 6
   boxDescent: 1
   polyOffset: 0.1
+  areaTypeValue: 5
 --- !u!1 &1736068886
 GameObject:
   m_ObjectHideFlags: 0
@@ -518,8 +519,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d5778fe4a784d809601086648407545, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedModeIdx: 6
-  selectedStraightPathOptionIdx: 0
+  selectedMode: 6
+  selectedStraightPathOption: 0
   constrainByCircle: 1
   includeFlags: -2
   excludeFlags: 0
