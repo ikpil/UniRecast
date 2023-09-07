@@ -160,7 +160,7 @@ namespace UniRecast.Editor
             UniRcGui.SliderFloat("Cell Size", _cellSize, 0.01f, 1f, 0.01f);
             UniRcGui.SliderFloat("Cell Height", _cellHeight, 0.01f, 1f, 0.01f);
             //UniRcEditorHelpers.Text($"Voxels {voxels[0]} x {voxels[1]}");
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Agent");
             UniRcGui.Separator();
@@ -170,44 +170,43 @@ namespace UniRecast.Editor
             UniRcGui.SliderFloat("Max Slope", _agentMaxSlope, 1f, 90f, 1);
             UniRcGui.SliderFloat("Max Acceleration", _agentMaxAcceleration, 8f, 999f, 0.1f);
             UniRcGui.SliderFloat("Max Speed", _agentMaxSpeed, 1f, 10f, 0.1f);
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Region");
             UniRcGui.Separator();
             UniRcGui.SliderInt("Min Region Size", _minRegionSize, 1, 150);
             UniRcGui.SliderInt("Merged Region Size", _mergedRegionSize, 1, 150);
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Filtering");
             UniRcGui.Separator();
             UniRcGui.Checkbox("Low Hanging Obstacles", _filterLowHangingObstacles);
             UniRcGui.Checkbox("Ledge Spans", _filterLedgeSpans);
             UniRcGui.Checkbox("Walkable Low Height Spans", _filterWalkableLowHeightSpans);
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Polygonization");
             UniRcGui.Separator();
             UniRcGui.SliderFloat("Max Edge Length", _edgeMaxLen, 0f, 50f, 0.1f);
             UniRcGui.SliderFloat("Max Edge Error", _edgeMaxError, 0.1f, 3f, 0.1f);
             UniRcGui.SliderInt("Vert Per Poly", _vertsPerPoly, 3, 12);
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Detail Mesh");
             UniRcGui.Separator();
             UniRcGui.SliderFloat("Sample Distance", _detailSampleDist, 0f, 16f, 0.1f);
             UniRcGui.SliderFloat("Max Sample Error", _detailSampleMaxError, 0f, 16f, 0.1f);
-            UniRcGui.Separator();
+            UniRcGui.NewLine();
 
             UniRcGui.Text("Tiling");
             UniRcGui.Separator();
             UniRcGui.SliderInt("Tile Size", _tileSize, 16, 1024, 16);
+            UniRcGui.NewLine();
 
             // UniRcEditorHelpers.Text($"Tiles {tiles[0]} x {tiles[1]}");
             // UniRcEditorHelpers.Text($"Max Tiles {maxTiles}");
             // UniRcEditorHelpers.Text($"Max Polys {maxPolys}");
             //}
-
-            UniRcGui.Separator();
 
             serializedObject.ApplyModifiedProperties();
 

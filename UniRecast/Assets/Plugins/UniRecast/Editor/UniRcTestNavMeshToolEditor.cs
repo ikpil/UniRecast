@@ -66,6 +66,7 @@ namespace UniRecast.Editor
                 UniRcGui.RadioButton(DtStraightPathOption.AreaCrossings.Label, _selectedStraightPathOption, DtStraightPathOption.AreaCrossings.Value);
                 UniRcGui.RadioButton(DtStraightPathOption.AllCrossings.Label, _selectedStraightPathOption, DtStraightPathOption.AllCrossings.Value);
                 //var straightPathOption = DtStraightPathOption.Values[_selectedStraightPathOption.intValue];
+                UniRcGui.NewLine();
             }
 
             if (RcTestNavmeshToolMode.PATHFIND_SLICED == mode)
@@ -83,6 +84,7 @@ namespace UniRecast.Editor
             if (RcTestNavmeshToolMode.FIND_POLYS_IN_CIRCLE == mode)
             {
                 UniRcGui.Checkbox("Constrained", _constrainByCircle);
+                UniRcGui.NewLine();
             }
 
             if (RcTestNavmeshToolMode.FIND_POLYS_IN_SHAPE == mode)
@@ -106,7 +108,6 @@ namespace UniRecast.Editor
             UniRcGui.CheckboxFlags("Swim", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_SWIM);
             UniRcGui.CheckboxFlags("Door", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_DOOR);
             UniRcGui.CheckboxFlags("Jump", _includeFlags, SampleAreaModifications.SAMPLE_POLYFLAGS_JUMP);
-            UniRcGui.Separator();
             UniRcGui.NewLine();
             //
             // m_filter.SetIncludeFlags(_option.includeFlags);

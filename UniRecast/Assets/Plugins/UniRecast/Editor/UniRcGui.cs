@@ -173,9 +173,12 @@ namespace UniRecast.Editor
             EditorGUILayout.LabelField(" ");
         }
 
-        public static void Separator()
+        public static void Separator(float height = 5.0f)
         {
-            EditorGUILayout.LabelField("-");
+            var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+            rect.y += EditorGUIUtility.singleLineHeight / 10.0f;
+            rect.height = height;
+            EditorGUI.DrawRect(rect, new Color32(128, 128, 128, 255));
         }
 
         public static void Text(string label)
