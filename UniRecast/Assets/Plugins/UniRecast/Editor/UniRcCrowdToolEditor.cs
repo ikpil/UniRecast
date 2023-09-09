@@ -61,7 +61,6 @@ namespace UniRecast.Editor
             UniRcGui.RadioButton(CrowdToolMode.MOVE_TARGET.Label, _mode, CrowdToolMode.MOVE_TARGET.Idx);
             UniRcGui.RadioButton(CrowdToolMode.SELECT.Label, _mode, CrowdToolMode.SELECT.Idx);
             UniRcGui.RadioButton(CrowdToolMode.TOGGLE_POLYS.Label, _mode, CrowdToolMode.TOGGLE_POLYS.Idx);
-            UniRcGui.RadioButton(CrowdToolMode.PROFILING.Label, _mode, CrowdToolMode.PROFILING.Idx);
             UniRcGui.NewLine();
 
             CrowdToolMode mode = CrowdToolMode.Values[_mode.intValue];
@@ -87,29 +86,21 @@ namespace UniRecast.Editor
             // }
 
 
-            if (mode == CrowdToolMode.PROFILING)
-            {
-                //profilingTool.Layout();
-            }
+            UniRcGui.Text("Selected Debug Draw");
+            UniRcGui.Separator();
+            UniRcGui.Checkbox("Show Corners", _showCorners);
+            UniRcGui.Checkbox("Show Collision Segs", _showCollisionSegments);
+            UniRcGui.Checkbox("Show Path", _showPath);
+            UniRcGui.Checkbox("Show VO", _showVO);
+            UniRcGui.Checkbox("Show Path Optimization", _showOpt);
+            UniRcGui.Checkbox("Show Neighbours", _showNeis);
+            UniRcGui.NewLine();
 
-            if (mode != CrowdToolMode.PROFILING)
-            {
-                UniRcGui.Text("Selected Debug Draw");
-                UniRcGui.Separator();
-                UniRcGui.Checkbox("Show Corners", _showCorners);
-                UniRcGui.Checkbox("Show Collision Segs", _showCollisionSegments);
-                UniRcGui.Checkbox("Show Path", _showPath);
-                UniRcGui.Checkbox("Show VO", _showVO);
-                UniRcGui.Checkbox("Show Path Optimization", _showOpt);
-                UniRcGui.Checkbox("Show Neighbours", _showNeis);
-                UniRcGui.NewLine();
-
-                UniRcGui.Text("Debug Draw");
-                UniRcGui.Separator();
-                UniRcGui.Checkbox("Show Prox Grid", _showGrid);
-                UniRcGui.Checkbox("Show Nodes", _showNodes);
-                //UniRcGui.Text($"Update Time: {crowdUpdateTime} ms");
-            }
+            UniRcGui.Text("Debug Draw");
+            UniRcGui.Separator();
+            UniRcGui.Checkbox("Show Prox Grid", _showGrid);
+            UniRcGui.Checkbox("Show Nodes", _showNodes);
+            //UniRcGui.Text($"Update Time: {crowdUpdateTime} ms");
 
             serializedObject.ApplyModifiedProperties();
         }
