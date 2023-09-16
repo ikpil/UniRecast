@@ -1,33 +1,40 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
-
-public class CsProj
-{
-    public string Name { get; init; }
-
-    public CsProj(string name)
-    {
-        Name = name;
-    }
-}
+using PullDotRecast;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        var directoryName = GetProgramDirectory("Program.cs");
-        Directory.SetCurrentDirectory(directoryName);
-        
-        // for dotnet run
-        var safeArgs = args
-            .Where(x => x != "--argument")
-            .ToList();
+        var programPath = SearchPath("Program.cs");
+        var dotRecastPath = SearchPath("DotRecast");
+        var uniRecastUnityPath = SearchPath("src/UniRecast.Unity");
+        Directory.SetCurrentDirectory(programPath);
 
-        if (0 >= safeArgs.Count)
+        // // for dotnet run
+        // var safeArgs = args
+        //     .Where(x => x != "--argument")
+        //     .ToList();
+        //
+        // if (0 >= safeArgs.Count)
+        // {
+        //     throw new Exception("not found source directory");
+        // }
+
+        if (!Directory.Exists(programPath))
         {
-            throw new Exception("not found source directory");
+            throw new Exception("not found Working Directory");
         }
-            
+
+        if (!Directory.Exists(dotRecastPath))
+        {
+            throw new Exception("not found DotRecast directory");
+        }
+
+        if (!Directory.Exists(uniRecastUnityPath))
+        {
+            throw new Exception("not found UniRecast.Unity directory");
+        }
+
 
         var ignorePaths = ImmutableArray.Create("bin", "obj");
         var projs = ImmutableArray.Create(
@@ -41,14 +48,8 @@ public class Program
             new CsProj("DotRecast.Recast.Toolset")
         );
 
-        string dotRecastPath = safeArgs[0];
-        dotRecastPath = Path.GetFullPath(dotRecastPath);
-        if (!Directory.Exists(dotRecastPath))
-        {
-            throw new Exception("not found source directory");
-        }
 
-        string destRoot = "../../UniRecast/Assets/Plugins/DotRecast";
+        string destRoot = "/Assets/Plugins/DotRecast";
         destRoot = Path.GetFullPath(destRoot);
         if (Directory.Exists(destRoot))
         {
@@ -61,35 +62,39 @@ public class Program
             var destPath = $"{destRoot}/src/{proj.Name}";
             SyncFiles(sourcePath, destPath, ignorePaths, "*.cs");
         }
-        
+
         // 몇몇 필요한 리소스 복사 하기
         string destResourcePath = destRoot + "/resources";
         if (!Directory.Exists(destResourcePath))
         {
             Directory.CreateDirectory(destResourcePath);
         }
-        
+
         string sourceResourcePath = "../../../DotRecast/resources/nav_test.obj";
         File.Copy(sourceResourcePath, destResourcePath + "/nav_test.obj", true);
     }
 
-    public static string GetProgramDirectory(string fileName)
+    public static string SearchPath(string fileName)
     {
         for (int i = 0; i < 10; ++i)
         {
-            var path = string.Join("", Enumerable.Range(0, i).Select(x => "../"));
+            var relativePath = string.Join("", Enumerable.Range(0, i).Select(x => "../"));
+            var filePath = Path.Combine(relativePath, fileName);
 
+            if (Directory.Exists(filePath))
+            {
+                return Path.GetFullPath(filePath);
+            }
 
-            var filePath = Path.Combine(path, fileName);
             if (File.Exists(filePath))
             {
                 var fullPath = Path.GetFullPath(filePath);
-                var directoryName = Path.GetDirectoryName(fullPath);
-                return directoryName;
+                var path = Path.GetDirectoryName(fullPath) ?? string.Empty;
+                return path;
             }
         }
 
-        return Directory.GetCurrentDirectory();
+        return string.Empty;
     }
 
     private static void SyncFiles(string srcRootPath, string dstRootPath, IList<string> ignoreFolders, string searchPattern = "*")
