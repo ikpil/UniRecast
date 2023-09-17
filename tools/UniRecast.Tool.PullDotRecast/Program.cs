@@ -49,28 +49,28 @@ public class Program
         );
 
 
-        string destRoot = "/Assets/Plugins/DotRecast";
-        destRoot = Path.GetFullPath(destRoot);
-        if (Directory.Exists(destRoot))
+        string destDotRecast = Path.Combine(uniRecastUnityPath, "Assets/Plugins/DotRecast");
+        destDotRecast = Path.GetFullPath(destDotRecast);
+        if (Directory.Exists(destDotRecast))
         {
-            Directory.Delete(destRoot, true);
+            Directory.Delete(destDotRecast, true);
         }
 
         foreach (var proj in projs)
         {
-            var sourcePath = $"../../../DotRecast/src/{proj.Name}";
-            var destPath = $"{destRoot}/src/{proj.Name}";
+            var sourcePath = Path.Combine(dotRecastPath, $"src/{proj.Name}");
+            var destPath = Path.Combine(destDotRecast, $"src/{proj.Name}");
             SyncFiles(sourcePath, destPath, ignorePaths, "*.cs");
         }
 
         // 몇몇 필요한 리소스 복사 하기
-        string destResourcePath = destRoot + "/resources";
+        string destResourcePath = destDotRecast + "/resources";
         if (!Directory.Exists(destResourcePath))
         {
             Directory.CreateDirectory(destResourcePath);
         }
 
-        string sourceResourcePath = "../../../DotRecast/resources/nav_test.obj";
+        string sourceResourcePath = Path.Combine(dotRecastPath, "resources/nav_test.obj");
         File.Copy(sourceResourcePath, destResourcePath + "/nav_test.obj", true);
     }
 
