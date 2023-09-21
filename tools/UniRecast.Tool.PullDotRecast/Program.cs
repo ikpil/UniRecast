@@ -5,9 +5,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var programPath = SearchPath("Program.cs");
-        var dotRecastPath = SearchPath("DotRecast");
-        var uniRecastUnityPath = SearchPath("src/UniRecast.Unity");
+        var programPath = SearchDirectory("Program.cs");
+        var dotRecastPath = SearchDirectory("DotRecast");
+        var uniRecastUnityPath = SearchDirectory("src/UniRecast.Unity");
         Directory.SetCurrentDirectory(programPath);
 
         // // for dotnet run
@@ -74,24 +74,50 @@ public class Program
         File.Copy(sourceResourcePath, destResourcePath + "/nav_test.obj", true);
     }
 
-    public static string SearchPath(string fileName)
+    public static string SearchPath(string searchPath, int depth, out bool isDir)
     {
-        for (int i = 0; i < 10; ++i)
+        isDir = false;
+
+        for (int i = 0; i < depth; ++i)
         {
             var relativePath = string.Join("", Enumerable.Range(0, i).Select(x => "../"));
-            var filePath = Path.Combine(relativePath, fileName);
+            var searchingPath = Path.Combine(relativePath, searchPath);
+            var fullSearchingPath = Path.GetFullPath(searchingPath);
 
-            if (Directory.Exists(filePath))
+            if (File.Exists(fullSearchingPath))
             {
-                return Path.GetFullPath(filePath);
+                return fullSearchingPath;
             }
 
-            if (File.Exists(filePath))
+            if (Directory.Exists(fullSearchingPath))
             {
-                var fullPath = Path.GetFullPath(filePath);
-                var path = Path.GetDirectoryName(fullPath) ?? string.Empty;
-                return path;
+                isDir = true;
+                return fullSearchingPath;
             }
+        }
+
+        return string.Empty;
+    }
+
+    // only directory
+    public static string SearchDirectory(string dirname, int depth = 10)
+    {
+        var searchingPath = SearchPath(dirname, depth, out var isDir);
+        if (isDir)
+        {
+            return searchingPath;
+        }
+
+        var path = Path.GetDirectoryName(searchingPath) ?? string.Empty;
+        return path;
+    }
+
+    public static string SearchFile(string filename, int depth = 10)
+    {
+        var searchingPath = SearchPath(filename, depth, out var isDir);
+        if (!isDir)
+        {
+            return searchingPath;
         }
 
         return string.Empty;
