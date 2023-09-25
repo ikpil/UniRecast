@@ -17,8 +17,9 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+using System;
 using DotRecast.Core;
-using static DotRecast.Core.RcMath;
+
 
 namespace DotRecast.Detour.Extras
 {
@@ -50,12 +51,12 @@ namespace DotRecast.Detour.Extras
                     bmax.Max(data.verts, data.polys[i].verts[j] * 3);
                 }
 
-                it.bmin[0] = Clamp((int)((bmin.x - data.header.bmin.x) * quantFactor), 0, 0x7fffffff);
-                it.bmin[1] = Clamp((int)((bmin.y - data.header.bmin.y) * quantFactor), 0, 0x7fffffff);
-                it.bmin[2] = Clamp((int)((bmin.z - data.header.bmin.z) * quantFactor), 0, 0x7fffffff);
-                it.bmax[0] = Clamp((int)((bmax.x - data.header.bmin.x) * quantFactor), 0, 0x7fffffff);
-                it.bmax[1] = Clamp((int)((bmax.y - data.header.bmin.y) * quantFactor), 0, 0x7fffffff);
-                it.bmax[2] = Clamp((int)((bmax.z - data.header.bmin.z) * quantFactor), 0, 0x7fffffff);
+                it.bmin[0] = Math.Clamp((int)((bmin.x - data.header.bmin.x) * quantFactor), 0, 0x7fffffff);
+                it.bmin[1] = Math.Clamp((int)((bmin.y - data.header.bmin.y) * quantFactor), 0, 0x7fffffff);
+                it.bmin[2] = Math.Clamp((int)((bmin.z - data.header.bmin.z) * quantFactor), 0, 0x7fffffff);
+                it.bmax[0] = Math.Clamp((int)((bmax.x - data.header.bmin.x) * quantFactor), 0, 0x7fffffff);
+                it.bmax[1] = Math.Clamp((int)((bmax.y - data.header.bmin.y) * quantFactor), 0, 0x7fffffff);
+                it.bmax[2] = Math.Clamp((int)((bmax.z - data.header.bmin.z) * quantFactor), 0, 0x7fffffff);
             }
 
             return DtNavMeshBuilder.Subdivide(items, data.header.polyCount, 0, data.header.polyCount, 0, nodes);

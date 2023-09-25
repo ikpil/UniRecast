@@ -1,6 +1,7 @@
+using System;
 using DotRecast.Core;
-using static DotRecast.Core.RcMath;
-using static DotRecast.Recast.Toolset.Gizmos.GizmoHelper;
+
+using static DotRecast.Recast.Toolset.Gizmos.RcGizmoHelper;
 
 
 namespace DotRecast.Recast.Toolset.Gizmos
@@ -53,7 +54,7 @@ namespace DotRecast.Recast.Toolset.Gizmos
                     v.y = vertices[i + 1] - center.y;
                     v.z = vertices[i + 2] - center.z;
                     RcVec3f.Normalize(ref v);
-                    gradient[i / 3] = Clamp(0.57735026f * (v.x + v.y + v.z), -1, 1);
+                    gradient[i / 3] = Math.Clamp(0.57735026f * (v.x + v.y + v.z), -1, 1);
                 }
             }
         }

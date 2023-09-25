@@ -19,13 +19,14 @@ freely, subject to the following restrictions:
 
 using System;
 using DotRecast.Core;
-using static DotRecast.Core.RcMath;
 using static DotRecast.Recast.RcConstants;
 
 
 namespace DotRecast.Recast
 {
-    public static class RecastFilledVolumeRasterization
+    
+
+    public static class RcFilledVolumeRasterization
     {
         private const float EPSILON = 0.00001f;
         private static readonly int[] BOX_EDGES = new[] { 0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 2, 3, 2, 6, 3, 7, 4, 5, 4, 6, 5, 7, 6, 7 };
@@ -56,8 +57,7 @@ namespace DotRecast.Recast
                 rectangle => IntersectCapsule(rectangle, start, end, axis, radius * radius));
         }
 
-        public static void RasterizeCylinder(RcHeightfield hf, RcVec3f start, RcVec3f end, float radius, int area, int flagMergeThr,
-            RcTelemetry ctx)
+        public static void RasterizeCylinder(RcHeightfield hf, RcVec3f start, RcVec3f end, float radius, int area, int flagMergeThr, RcTelemetry ctx)
         {
             using var timer = ctx.ScopedTimer(RcTimerLabel.RC_TIMER_RASTERIZE_CYLINDER);
             float[] bounds =
@@ -71,8 +71,7 @@ namespace DotRecast.Recast
                 rectangle => IntersectCylinder(rectangle, start, end, axis, radius * radius));
         }
 
-        public static void RasterizeBox(RcHeightfield hf, RcVec3f center, RcVec3f[] halfEdges, int area, int flagMergeThr,
-            RcTelemetry ctx)
+        public static void RasterizeBox(RcHeightfield hf, RcVec3f center, RcVec3f[] halfEdges, int area, int flagMergeThr, RcTelemetry ctx)
         {
             using var timer = ctx.ScopedTimer(RcTimerLabel.RC_TIMER_RASTERIZE_BOX);
             RcVec3f[] normals =
@@ -122,8 +121,7 @@ namespace DotRecast.Recast
             RasterizationFilledShape(hf, bounds, area, flagMergeThr, rectangle => IntersectBox(rectangle, vertices, planes));
         }
 
-        public static void RasterizeConvex(RcHeightfield hf, float[] vertices, int[] triangles, int area, int flagMergeThr,
-            RcTelemetry ctx)
+        public static void RasterizeConvex(RcHeightfield hf, float[] vertices, int[] triangles, int area, int flagMergeThr, RcTelemetry ctx)
         {
             using var timer = ctx.ScopedTimer(RcTimerLabel.RC_TIMER_RASTERIZE_CONVEX);
             float[] bounds = new float[] { vertices[0], vertices[1], vertices[2], vertices[0], vertices[1], vertices[2] };
@@ -224,9 +222,9 @@ namespace DotRecast.Recast
                         int smax = (int)Math.Ceiling((h[1] - hf.bmin.y) * ich);
                         if (smin != smax)
                         {
-                            int ismin = Clamp(smin, 0, SPAN_MAX_HEIGHT);
-                            int ismax = Clamp(smax, ismin + 1, SPAN_MAX_HEIGHT);
-                            RecastRasterization.AddSpan(hf, x, z, ismin, ismax, area, flagMergeThr);
+                            int ismin = Math.Clamp(smin, 0, SPAN_MAX_HEIGHT);
+                            int ismax = Math.Clamp(smax, ismin + 1, SPAN_MAX_HEIGHT);
+                            RcRasterizations.AddSpan(hf, x, z, ismin, ismax, area, flagMergeThr);
                         }
                     }
                 }
@@ -284,12 +282,12 @@ namespace DotRecast.Recast
         {
             float[] s = MergeIntersections(
                 RayCylinderIntersection(RcVec3f.Of(
-                    Clamp(start.x, rectangle[0], rectangle[2]), rectangle[4],
-                    Clamp(start.z, rectangle[1], rectangle[3])
+                    Math.Clamp(start.x, rectangle[0], rectangle[2]), rectangle[4],
+                    Math.Clamp(start.z, rectangle[1], rectangle[3])
                 ), start, axis, radiusSqr),
                 RayCylinderIntersection(RcVec3f.Of(
-                    Clamp(end.x, rectangle[0], rectangle[2]), rectangle[4],
-                    Clamp(end.z, rectangle[1], rectangle[3])
+                    Math.Clamp(end.x, rectangle[0], rectangle[2]), rectangle[4],
+                    Math.Clamp(end.z, rectangle[1], rectangle[3])
                 ), start, axis, radiusSqr));
             float axisLen2dSqr = axis.x * axis.x + axis.z * axis.z;
             if (axisLen2dSqr > EPSILON)
@@ -400,7 +398,7 @@ namespace DotRecast.Recast
         {
             // 2d intersection of plane and segment
             float t = (x - start.x) / direction.x;
-            float z = Clamp(start.z + t * direction.z, rectangle[1], rectangle[3]);
+            float z = Math.Clamp(start.z + t * direction.z, rectangle[1], rectangle[3]);
             return RcVec3f.Of(x, rectangle[4], z);
         }
 
@@ -413,7 +411,7 @@ namespace DotRecast.Recast
         {
             // 2d intersection of plane and segment
             float t = (z - start.z) / direction.z;
-            float x = Clamp(start.x + t * direction.x, rectangle[0], rectangle[2]);
+            float x = Math.Clamp(start.x + t * direction.x, rectangle[0], rectangle[2]);
             return RcVec3f.Of(x, rectangle[4], z);
         }
 

@@ -23,7 +23,6 @@ namespace DotRecast.Recast.Toolset.Tools
             return "Annotation Builder";
         }
 
-
         public void Clear()
         {
             _annotationBuilder = null;
@@ -44,7 +43,7 @@ namespace DotRecast.Recast.Toolset.Tools
             return _links;
         }
 
-        public void Build(IInputGeomProvider geom, RcNavMeshBuildSettings settings, IList<RecastBuilderResult> results, RcJumpLinkBuilderToolConfig cfg)
+        public void Build(IInputGeomProvider geom, RcNavMeshBuildSettings settings, IList<RcBuilderResult> results, RcJumpLinkBuilderToolConfig cfg)
         {
             if (_annotationBuilder == null)
             {

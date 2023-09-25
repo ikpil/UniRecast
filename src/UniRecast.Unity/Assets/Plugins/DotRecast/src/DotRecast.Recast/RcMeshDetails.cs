@@ -21,13 +21,15 @@ freely, subject to the following restrictions:
 using System;
 using System.Collections.Generic;
 using DotRecast.Core;
-using static DotRecast.Core.RcMath;
-using static DotRecast.Recast.RecastCommon;
 using static DotRecast.Recast.RcConstants;
 
 namespace DotRecast.Recast
 {
-    public static class RecastMeshDetail
+    using static RcCommons;
+    
+
+
+    public static class RcMeshDetails
     {
         public const int MAX_VERTS = 127;
         public const int MAX_TRIS = 255; // Max tris for delaunay is 2n-2-k (n=num verts, k=num hull verts).
@@ -350,8 +352,8 @@ namespace DotRecast.Recast
         {
             int ix = (int)Math.Floor(fx * ics + 0.01f);
             int iz = (int)Math.Floor(fz * ics + 0.01f);
-            ix = Clamp(ix - hp.xmin, 0, hp.width - 1);
-            iz = Clamp(iz - hp.ymin, 0, hp.height - 1);
+            ix = Math.Clamp(ix - hp.xmin, 0, hp.width - 1);
+            iz = Math.Clamp(iz - hp.ymin, 0, hp.height - 1);
             int h = hp.data[ix + iz * hp.width];
             if (h == RC_UNSET_HEIGHT)
             {
@@ -764,8 +766,8 @@ namespace DotRecast.Recast
                 }
 
                 // segments on edges
-                int pi = RecastMesh.Prev(i, nhull);
-                int ni = RecastMesh.Next(i, nhull);
+                int pi = RcMeshs.Prev(i, nhull);
+                int ni = RcMeshs.Next(i, nhull);
                 int pv = hull[pi] * 3;
                 int cv = hull[i] * 3;
                 int nv = hull[ni] * 3;
@@ -789,11 +791,11 @@ namespace DotRecast.Recast
             // depending on which triangle has shorter perimeter.
             // This heuristic was chose empirically, since it seems
             // handle tessellated straight edges well.
-            while (RecastMesh.Next(left, nhull) != right)
+            while (RcMeshs.Next(left, nhull) != right)
             {
                 // Check to see if se should advance left or right.
-                int nleft = RecastMesh.Next(left, nhull);
-                int nright = RecastMesh.Prev(right, nhull);
+                int nleft = RcMeshs.Next(left, nhull);
+                int nright = RcMeshs.Prev(right, nhull);
 
                 int cvleft = hull[left] * 3;
                 int nvleft = hull[nleft] * 3;
