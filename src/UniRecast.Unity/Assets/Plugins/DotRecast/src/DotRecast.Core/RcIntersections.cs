@@ -1,4 +1,5 @@
 /*
+Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2021 Piotr Piastucki piotr@jtilia.org
 DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
 
@@ -21,7 +22,7 @@ using System;
 
 namespace DotRecast.Core
 {
-    public static class Intersections
+    public static class RcIntersections
     {
         public static bool IntersectSegmentTriangle(RcVec3f sp, RcVec3f sq, RcVec3f a, RcVec3f b, RcVec3f c, out float t)
         {

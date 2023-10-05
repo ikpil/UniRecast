@@ -57,13 +57,13 @@ namespace UniRecast.Editor
         {
             UniRcGui.Text($"Crowd Tool Mode");
             UniRcGui.Separator();
-            UniRcGui.RadioButton(CrowdToolMode.CREATE.Label, _mode, CrowdToolMode.CREATE.Idx);
-            UniRcGui.RadioButton(CrowdToolMode.MOVE_TARGET.Label, _mode, CrowdToolMode.MOVE_TARGET.Idx);
-            UniRcGui.RadioButton(CrowdToolMode.SELECT.Label, _mode, CrowdToolMode.SELECT.Idx);
-            UniRcGui.RadioButton(CrowdToolMode.TOGGLE_POLYS.Label, _mode, CrowdToolMode.TOGGLE_POLYS.Idx);
+            UniRcGui.RadioButton(RcCrowdToolMode.CREATE.Label, _mode, RcCrowdToolMode.CREATE.Idx);
+            UniRcGui.RadioButton(RcCrowdToolMode.MOVE_TARGET.Label, _mode, RcCrowdToolMode.MOVE_TARGET.Idx);
+            UniRcGui.RadioButton(RcCrowdToolMode.SELECT.Label, _mode, RcCrowdToolMode.SELECT.Idx);
+            UniRcGui.RadioButton(RcCrowdToolMode.TOGGLE_POLYS.Label, _mode, RcCrowdToolMode.TOGGLE_POLYS.Idx);
             UniRcGui.NewLine();
 
-            CrowdToolMode mode = CrowdToolMode.Values[_mode.intValue];
+            RcCrowdToolMode mode = RcCrowdToolMode.Values[_mode.intValue];
 
             UniRcGui.Text("Options");
             UniRcGui.Separator();

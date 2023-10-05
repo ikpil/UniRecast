@@ -58,7 +58,7 @@ namespace DotRecast.Recast.Toolset.Tools
             while (0 < polys.Count && smoothPath.Count < MAX_SMOOTH)
             {
                 // Find location to steer towards.
-                if (!PathUtils.GetSteerTarget(navQuery, iterPos, targetPos, SLOP,
+                if (!DtPathUtils.GetSteerTarget(navQuery, iterPos, targetPos, SLOP,
                         polys, out var steerPos, out var steerPosFlag, out var steerPosRef))
                 {
                     break;
@@ -91,8 +91,8 @@ namespace DotRecast.Recast.Toolset.Tools
 
                 iterPos = result;
 
-                polys = PathUtils.MergeCorridorStartMoved(polys, visited);
-                polys = PathUtils.FixupShortcuts(polys, navQuery);
+                polys = DtPathUtils.MergeCorridorStartMoved(polys, visited);
+                polys = DtPathUtils.FixupShortcuts(polys, navQuery);
 
                 var status = navQuery.GetPolyHeight(polys[0], result, out var h);
                 if (status.Succeeded())
@@ -101,7 +101,7 @@ namespace DotRecast.Recast.Toolset.Tools
                 }
 
                 // Handle end of path and off-mesh links when close enough.
-                if (endOfPath && PathUtils.InRange(iterPos, steerPos, SLOP, 1.0f))
+                if (endOfPath && DtPathUtils.InRange(iterPos, steerPos, SLOP, 1.0f))
                 {
                     // Reached end of path.
                     iterPos = targetPos;
@@ -112,7 +112,7 @@ namespace DotRecast.Recast.Toolset.Tools
 
                     break;
                 }
-                else if (offMeshConnection && PathUtils.InRange(iterPos, steerPos, SLOP, 1.0f))
+                else if (offMeshConnection && DtPathUtils.InRange(iterPos, steerPos, SLOP, 1.0f))
                 {
                     // Reached off-mesh connection.
                     RcVec3f startPos = RcVec3f.Zero;
@@ -163,7 +163,7 @@ namespace DotRecast.Recast.Toolset.Tools
         }
 
         public DtStatus FindStraightPath(DtNavMeshQuery navQuery, long startRef, long endRef, RcVec3f startPt, RcVec3f endPt, IDtQueryFilter filter, bool enableRaycast,
-            ref List<long> polys, ref List<StraightPathItem> straightPath, int straightPathOptions)
+            ref List<long> polys, ref List<DtStraightPath> straightPath, int straightPathOptions)
         {
             if (startRef == 0 || endRef == 0)
             {
@@ -171,7 +171,7 @@ namespace DotRecast.Recast.Toolset.Tools
             }
 
             polys ??= new List<long>();
-            straightPath ??= new List<StraightPathItem>();
+            straightPath ??= new List<DtStraightPath>();
 
             polys.Clear();
             straightPath.Clear();
@@ -212,7 +212,7 @@ namespace DotRecast.Recast.Toolset.Tools
         }
 
         public DtStatus UpdateSlicedFindPath(DtNavMeshQuery navQuery, int maxIter, long endRef, RcVec3f startPos, RcVec3f endPos,
-            ref List<long> path, ref List<StraightPathItem> straightPath)
+            ref List<long> path, ref List<DtStraightPath> straightPath)
         {
             var status = navQuery.UpdateSlicedFindPath(maxIter, out _);
 
@@ -237,7 +237,7 @@ namespace DotRecast.Recast.Toolset.Tools
                     }
                 }
 
-                straightPath = new List<StraightPathItem>(MAX_POLYS);
+                straightPath = new List<DtStraightPath>(MAX_POLYS);
                 navQuery.FindStraightPath(startPos, epos, path, ref straightPath, MAX_POLYS, DtNavMeshQuery.DT_STRAIGHTPATH_ALL_CROSSINGS);
             }
 
@@ -246,7 +246,7 @@ namespace DotRecast.Recast.Toolset.Tools
 
 
         public DtStatus Raycast(DtNavMeshQuery navQuery, long startRef, long endRef, RcVec3f startPos, RcVec3f endPos, IDtQueryFilter filter,
-            ref List<long> polys, ref List<StraightPathItem> straightPath, ref RcVec3f hitPos, ref RcVec3f hitNormal, ref bool hitResult)
+            ref List<long> polys, ref List<DtStraightPath> straightPath, ref RcVec3f hitPos, ref RcVec3f hitNormal, ref bool hitResult)
         {
             if (startRef == 0 || endRef == 0)
             {
@@ -289,10 +289,10 @@ namespace DotRecast.Recast.Toolset.Tools
                 }
             }
 
-            straightPath ??= new List<StraightPathItem>();
+            straightPath ??= new List<DtStraightPath>();
             straightPath.Clear();
-            straightPath.Add(new StraightPathItem(startPos, 0, 0));
-            straightPath.Add(new StraightPathItem(hitPos, 0, 0));
+            straightPath.Add(new DtStraightPath(startPos, 0, 0));
+            straightPath.Add(new DtStraightPath(hitPos, 0, 0));
 
             return status;
         }
@@ -422,7 +422,7 @@ namespace DotRecast.Recast.Toolset.Tools
                 ? DtStrictDtPolygonByCircleConstraint.Shared
                 : DtNoOpDtPolygonByCircleConstraint.Shared;
 
-            var frand = new FRand();
+            var frand = new RcRand();
             int prevCnt = points.Count;
 
             points = new List<RcVec3f>();

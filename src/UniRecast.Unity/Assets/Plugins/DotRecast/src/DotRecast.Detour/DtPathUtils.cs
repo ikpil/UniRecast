@@ -24,7 +24,7 @@ using DotRecast.Core;
 
 namespace DotRecast.Detour
 {
-    public static class PathUtils
+    public static class DtPathUtils
     {
         private const int MAX_STEER_POINTS = 3;
 
@@ -38,7 +38,7 @@ namespace DotRecast.Detour
             steerPosRef = 0;
 
             // Find steer target.
-            var straightPath = new List<StraightPathItem>(MAX_STEER_POINTS);
+            var straightPath = new List<DtStraightPath>(MAX_STEER_POINTS);
             var result = navQuery.FindStraightPath(startPos, endPos, path, ref straightPath, MAX_STEER_POINTS, 0);
             if (result.Failed())
             {
