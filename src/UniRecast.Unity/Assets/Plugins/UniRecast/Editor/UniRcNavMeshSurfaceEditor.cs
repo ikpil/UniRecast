@@ -344,7 +344,7 @@ namespace UniRecast.Editor
                 for (int ii = 0; ii < tile.data.header.polyCount; ++ii)
                 {
                     DtPoly p = tile.data.polys[ii];
-                    if (p.GetPolyType() == DtPoly.DT_POLYTYPE_OFFMESH_CONNECTION)
+                    if (p.GetPolyType() == DtPolyTypes.DT_POLYTYPE_OFFMESH_CONNECTION)
                     {
                         continue;
                     }
