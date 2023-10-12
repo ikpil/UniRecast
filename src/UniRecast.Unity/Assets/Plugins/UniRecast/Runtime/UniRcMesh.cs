@@ -44,7 +44,7 @@ namespace UniRecast
             // 버텍스 기록
             foreach (var vertex in Vertices)
             {
-                sb.AppendLine($"v {vertex.x:F6} {vertex.y:F6} {vertex.z:F6}");
+                sb.AppendLine($"v {vertex.X:F6} {vertex.Y:F6} {vertex.Z:F6}");
             }
 
             // 면 기록
@@ -64,9 +64,9 @@ namespace UniRecast
             var vertices = new float[Vertices.Length * 3];
             for (int i = 0; i < Vertices.Length; ++i)
             {
-                vertices[i * 3 + 0] = Vertices[i].x;
-                vertices[i * 3 + 1] = Vertices[i].y;
-                vertices[i * 3 + 2] = Vertices[i].z;
+                vertices[i * 3 + 0] = Vertices[i].X;
+                vertices[i * 3 + 1] = Vertices[i].Y;
+                vertices[i * 3 + 2] = Vertices[i].Z;
             }
 
             var geom = new DemoInputGeomProvider(vertices, Faces);

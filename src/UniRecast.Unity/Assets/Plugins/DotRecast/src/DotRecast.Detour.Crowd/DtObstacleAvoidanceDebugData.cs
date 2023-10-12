@@ -21,10 +21,8 @@ freely, subject to the following restrictions:
 using System;
 using DotRecast.Core;
 
-namespace DotRecast.Detour.Crowd.Tracking
+namespace DotRecast.Detour.Crowd
 {
-    
-
     public class DtObstacleAvoidanceDebugData
     {
         private int m_nsamples;
@@ -84,9 +82,9 @@ namespace DotRecast.Detour.Crowd.Tracking
         {
             if (m_nsamples >= m_maxSamples)
                 return;
-            m_vel[m_nsamples * 3] = vel.x;
-            m_vel[m_nsamples * 3 + 1] = vel.y;
-            m_vel[m_nsamples * 3 + 2] = vel.z;
+            m_vel[m_nsamples * 3] = vel.X;
+            m_vel[m_nsamples * 3 + 1] = vel.Y;
+            m_vel[m_nsamples * 3 + 2] = vel.Z;
             m_ssize[m_nsamples] = ssize;
             m_pen[m_nsamples] = pen;
             m_vpen[m_nsamples] = vpen;
@@ -104,9 +102,9 @@ namespace DotRecast.Detour.Crowd.Tracking
         public RcVec3f GetSampleVelocity(int i)
         {
             RcVec3f vel = new RcVec3f();
-            vel.x = m_vel[i * 3];
-            vel.y = m_vel[i * 3 + 1];
-            vel.z = m_vel[i * 3 + 2];
+            vel.X = m_vel[i * 3];
+            vel.Y = m_vel[i * 3 + 1];
+            vel.Z = m_vel[i * 3 + 2];
             return vel;
         }
 
