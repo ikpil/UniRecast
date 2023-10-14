@@ -1071,7 +1071,7 @@ namespace DotRecast.Detour
                 };
 
                 // Find polygon to connect to.
-                var refs = FindNearestPolyInTile(tile, RcVec3f.Of(con.pos), ext, out var nearestPt);
+                var refs = FindNearestPolyInTile(tile, new RcVec3f(con.pos[0], con.pos[1], con.pos[2]), ext, out var nearestPt);
                 if (refs == 0)
                 {
                     continue;
@@ -1568,8 +1568,8 @@ namespace DotRecast.Detour
                 }
             }
 
-            startPos = RcVec3f.Of(tile.data.verts, poly.verts[idx0] * 3);
-            endPos = RcVec3f.Of(tile.data.verts, poly.verts[idx1] * 3);
+            startPos = new RcVec3f(tile.data.verts.AsSpan(poly.verts[idx0] * 3));
+            endPos = new RcVec3f(tile.data.verts.AsSpan(poly.verts[idx1] * 3));
 
             return DtStatus.DT_SUCCSESS;
         }
@@ -1772,8 +1772,8 @@ namespace DotRecast.Detour
 
         public void ComputeBounds(out RcVec3f bmin, out RcVec3f bmax)
         {
-            bmin = RcVec3f.Of(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-            bmax = RcVec3f.Of(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+            bmin = new RcVec3f(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            bmax = new RcVec3f(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
             for (int t = 0; t < GetMaxTiles(); ++t)
             {
                 DtMeshTile tile = GetTile(t);

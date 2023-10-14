@@ -148,12 +148,12 @@ namespace DotRecast.Recast.Toolset.Geom
                 return false;
             }
 
-            float[] p = new float[2];
-            float[] q = new float[2];
-            p[0] = src.X + (dst.X - src.X) * btmin;
-            p[1] = src.Z + (dst.Z - src.Z) * btmin;
-            q[0] = src.X + (dst.X - src.X) * btmax;
-            q[1] = src.Z + (dst.Z - src.Z) * btmax;
+            var p = new RcVec2f();
+            var q = new RcVec2f();
+            p.X = src.X + (dst.X - src.X) * btmin;
+            p.Y = src.Z + (dst.Z - src.Z) * btmin;
+            q.X = src.X + (dst.X - src.X) * btmax;
+            q.Y = src.Z + (dst.Z - src.Z) * btmax;
 
             List<RcChunkyTriMeshNode> chunks = _mesh.chunkyTriMesh.GetChunksOverlappingSegment(p, q);
             if (0 == chunks.Count)
@@ -168,17 +168,17 @@ namespace DotRecast.Recast.Toolset.Geom
                 int[] tris = chunk.tris;
                 for (int j = 0; j < chunk.tris.Length; j += 3)
                 {
-                    RcVec3f v1 = RcVec3f.Of(
+                    RcVec3f v1 = new RcVec3f(
                         vertices[tris[j] * 3],
                         vertices[tris[j] * 3 + 1],
                         vertices[tris[j] * 3 + 2]
                     );
-                    RcVec3f v2 = RcVec3f.Of(
+                    RcVec3f v2 = new RcVec3f(
                         vertices[tris[j + 1] * 3],
                         vertices[tris[j + 1] * 3 + 1],
                         vertices[tris[j + 1] * 3 + 2]
                     );
-                    RcVec3f v3 = RcVec3f.Of(
+                    RcVec3f v3 = new RcVec3f(
                         vertices[tris[j + 2] * 3],
                         vertices[tris[j + 2] * 3 + 1],
                         vertices[tris[j + 2] * 3 + 2]

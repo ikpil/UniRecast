@@ -104,7 +104,7 @@ namespace DotRecast.Detour
                 int va = j * 3;
                 int vb = i * 3;
 
-                RcVec3f n = RcVec3f.Of(polya[vb + 2] - polya[va + 2], 0, -(polya[vb + 0] - polya[va + 0]));
+                RcVec3f n = new RcVec3f(polya[vb + 2] - polya[va + 2], 0, -(polya[vb + 0] - polya[va + 0]));
 
                 RcVec2f aminmax = ProjectPoly(n, polya, npolya);
                 RcVec2f bminmax = ProjectPoly(n, polyb, npolyb);
@@ -120,7 +120,7 @@ namespace DotRecast.Detour
                 int va = j * 3;
                 int vb = i * 3;
 
-                RcVec3f n = RcVec3f.Of(polyb[vb + 2] - polyb[va + 2], 0, -(polyb[vb + 0] - polyb[va + 0]));
+                RcVec3f n = new RcVec3f(polyb[vb + 2] - polyb[va + 2], 0, -(polyb[vb + 0] - polyb[va + 0]));
 
                 RcVec2f aminmax = ProjectPoly(n, polya, npolya);
                 RcVec2f bminmax = ProjectPoly(n, polyb, npolyb);
@@ -308,8 +308,8 @@ namespace DotRecast.Detour
 
         public static float DistancePtSegSqr2D(RcVec3f pt, float[] verts, int p, int q, out float t)
         {
-            var vp = RcVec3f.Of(verts, p);
-            var vq = RcVec3f.Of(verts, q);
+            var vp = new RcVec3f(verts.AsSpan(p));
+            var vq = new RcVec3f(verts.AsSpan(q));
             return DistancePtSegSqr2D(pt, vp, vq, out t);
         }
 
