@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace DotRecast.Core
+namespace DotRecast.Core.Numerics
 {
     public struct RcVec2f
     {
@@ -14,18 +14,6 @@ namespace DotRecast.Core
         {
             X = x;
             Y = y;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Get(int idx)
-        {
-            if (0 == idx)
-                return X;
-
-            if (1 == idx)
-                return Y;
-
-            throw new IndexOutOfRangeException("vector2f index out of range");
         }
 
         public override bool Equals(object obj)

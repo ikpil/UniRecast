@@ -19,7 +19,7 @@ freely, subject to the following restrictions:
 using System;
 using System.Runtime.CompilerServices;
 
-namespace DotRecast.Core
+namespace DotRecast.Core.Numerics
 {
     public struct RcVec3f
     {
@@ -125,14 +125,11 @@ namespace DotRecast.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly RcVec3f Subtract(RcVec3f right)
+        public static RcVec3f Subtract(RcVec3f left, RcVec3f right)
         {
-            return new RcVec3f(
-                X - right.X,
-                Y - right.Y,
-                Z - right.Z
-            );
+            return left - right;
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly RcVec3f Add(RcVec3f v2)
@@ -286,7 +283,11 @@ namespace DotRecast.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RcVec3f operator -(RcVec3f left, RcVec3f right)
         {
-            return left.Subtract(right);
+            return new RcVec3f(
+                left.X - right.X,
+                left.Y - right.Y,
+                left.Z - right.Z
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

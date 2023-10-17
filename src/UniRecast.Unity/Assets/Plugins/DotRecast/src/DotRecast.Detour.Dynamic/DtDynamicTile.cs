@@ -20,9 +20,9 @@ freely, subject to the following restrictions:
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-
 using System.Linq;
 using DotRecast.Core;
+using DotRecast.Core.Collections;
 using DotRecast.Detour.Dynamic.Colliders;
 using DotRecast.Detour.Dynamic.Io;
 using DotRecast.Recast;

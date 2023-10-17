@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using DotRecast.Core;
+using DotRecast.Core.Numerics;
 using DotRecast.Detour;
 using DotRecast.Recast.Toolset;
 using DotRecast.Recast.Toolset.Builder;

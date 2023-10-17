@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotRecast.Core;
+using DotRecast.Core.Numerics;
 using DotRecast.Detour;
 using DotRecast.Detour.Crowd;
-
 using DotRecast.Recast.Toolset.Builder;
 
 namespace DotRecast.Recast.Toolset.Tools
@@ -294,7 +294,7 @@ namespace DotRecast.Recast.Toolset.Tools
 
         private RcVec3f CalcVel(RcVec3f pos, RcVec3f tgt, float speed)
         {
-            RcVec3f vel = tgt.Subtract(pos);
+            RcVec3f vel = RcVec3f.Subtract(tgt, pos);
             vel.Y = 0.0f;
             vel.Normalize();
             return vel.Scale(speed);
