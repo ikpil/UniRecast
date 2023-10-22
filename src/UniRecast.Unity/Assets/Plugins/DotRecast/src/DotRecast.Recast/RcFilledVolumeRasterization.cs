@@ -79,9 +79,9 @@ namespace DotRecast.Recast
                 new RcVec3f(halfEdges[1].X, halfEdges[1].Y, halfEdges[1].Z),
                 new RcVec3f(halfEdges[2].X, halfEdges[2].Y, halfEdges[2].Z),
             };
-            RcVec3f.Normalize(ref normals[0]);
-            RcVec3f.Normalize(ref normals[1]);
-            RcVec3f.Normalize(ref normals[2]);
+            normals[0] = RcVec3f.Normalize(normals[0]);
+            normals[1] = RcVec3f.Normalize(normals[1]);
+            normals[2] = RcVec3f.Normalize(normals[2]);
 
             float[] vertices = new float[8 * 3];
             float[] bounds = new float[]
@@ -176,7 +176,7 @@ namespace DotRecast.Recast
 
         private static void Plane(float[][] planes, int p, float[] v1, float[] v2, float[] vertices, int vert)
         {
-            RcVec3f.Cross(planes[p], v1, v2);
+            RcVecUtils.Cross(planes[p], v1, v2);
             planes[p][3] = planes[p][0] * vertices[vert] + planes[p][1] * vertices[vert + 1] + planes[p][2] * vertices[vert + 2];
         }
 

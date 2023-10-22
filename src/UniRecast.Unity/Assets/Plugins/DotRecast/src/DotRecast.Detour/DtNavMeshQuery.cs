@@ -641,8 +641,8 @@ namespace DotRecast.Detour
 
                     // Calc polygon bounds.
                     int v = p.verts[0] * 3;
-                    bmin.Set(tile.data.verts, v);
-                    bmax.Set(tile.data.verts, v);
+                    bmin = new RcVec3f(tile.data.verts.AsSpan(v));
+                    bmax = new RcVec3f(tile.data.verts.AsSpan(v));
                     for (int j = 1; j < p.vertCount; ++j)
                     {
                         v = p.verts[j] * 3;
@@ -680,7 +680,7 @@ namespace DotRecast.Detour
 
             // Find tiles the query touches.
             RcVec3f bmin = RcVec3f.Subtract(center, halfExtents);
-            RcVec3f bmax = center.Add(halfExtents);
+            RcVec3f bmax = RcVec3f.Add(center, halfExtents);
             foreach (var t in QueryTiles(center, halfExtents))
             {
                 QueryPolygonsInTile(t, bmin, bmax, filter, query);
@@ -700,7 +700,7 @@ namespace DotRecast.Detour
             }
 
             RcVec3f bmin = RcVec3f.Subtract(center, halfExtents);
-            RcVec3f bmax = center.Add(halfExtents);
+            RcVec3f bmax = RcVec3f.Add(center, halfExtents);
             m_nav.CalcTileLoc(bmin, out var minx, out var miny);
             m_nav.CalcTileLoc(bmax, out var maxx, out var maxy);
 
@@ -2363,10 +2363,7 @@ namespace DotRecast.Detour
                     // int vb = b * 3;
                     float dx = verts[b].X - verts[a].X;
                     float dz = verts[b].Z - verts[a].X;
-                    hit.hitNormal.X = dz;
-                    hit.hitNormal.Y = 0;
-                    hit.hitNormal.Z = -dx;
-                    hit.hitNormal.Normalize();
+                    hit.hitNormal = RcVec3f.Normalize(new RcVec3f(dz, 0, -dx));
                     return DtStatus.DT_SUCCSESS;
                 }
 
@@ -3034,8 +3031,8 @@ namespace DotRecast.Detour
                     int ivj = poly.verts[j] * 3;
                     int ivi = poly.verts[i] * 3;
                     var seg = new RcSegmentVert();
-                    seg.vmin.Set(tile.data.verts, ivj);
-                    seg.vmax.Set(tile.data.verts, ivi);
+                    seg.vmin = new RcVec3f(tile.data.verts.AsSpan(ivj));
+                    seg.vmax = new RcVec3f(tile.data.verts.AsSpan(ivi));
                     // Array.Copy(tile.data.verts, ivj, seg, 0, 3);
                     // Array.Copy(tile.data.verts, ivi, seg, 3, 3);
                     segmentVerts.Add(seg);
@@ -3302,10 +3299,7 @@ namespace DotRecast.Detour
             if (hasBestV)
             {
                 var tangent = RcVec3f.Subtract(bestvi, bestvj);
-                hitNormal.X = tangent.Z;
-                hitNormal.Y = 0;
-                hitNormal.Z = -tangent.X;
-                hitNormal.Normalize();
+                hitNormal = RcVec3f.Normalize(new RcVec3f(tangent.Z, 0, -tangent.X));
             }
 
             hitDist = (float)Math.Sqrt(radiusSqr);

@@ -401,8 +401,8 @@ namespace DotRecast.Detour
 
                     // Calc polygon bounds.
                     int v = p.verts[0] * 3;
-                    bmin.Set(tile.data.verts, v);
-                    bmax.Set(tile.data.verts, v);
+                    bmin = new RcVec3f(tile.data.verts.AsSpan(v));
+                    bmax = new RcVec3f(tile.data.verts.AsSpan(v));
                     for (int j = 1; j < p.vertCount; ++j)
                     {
                         v = p.verts[j] * 3;
@@ -1353,7 +1353,7 @@ namespace DotRecast.Detour
 
             bool overPoly = false;
             RcVec3f bmin = RcVec3f.Subtract(center, halfExtents);
-            RcVec3f bmax = center.Add(halfExtents);
+            RcVec3f bmax = RcVec3f.Add(center, halfExtents);
 
             // Get nearby polygons from proximity grid.
             List<long> polys = QueryPolygonsInTile(tile, bmin, bmax);

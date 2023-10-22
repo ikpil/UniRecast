@@ -23,6 +23,8 @@ namespace DotRecast.Core.Numerics
 {
     public struct RcVec3f
     {
+        public const float EPSILON = 1e-6f;
+
         public float X;
         public float Y;
         public float Z;
@@ -96,32 +98,16 @@ namespace DotRecast.Core.Numerics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Set(float a, float b, float c)
-        {
-            X = a;
-            Y = b;
-            Z = c;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Set(float[] @in)
-        {
-            Set(@in, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Set(float[] @in, int i)
-        {
-            X = @in[i];
-            Y = @in[i + 1];
-            Z = @in[i + 2];
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly float Length()
         {
-            return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
+            float lengthSquared = LengthSquared();
+            return MathF.Sqrt(lengthSquared);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly float LengthSquared()
+        {
+            return Dot(this, this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,43 +118,9 @@ namespace DotRecast.Core.Numerics
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly RcVec3f Add(RcVec3f v2)
+        public static RcVec3f Add(RcVec3f left, RcVec3f right)
         {
-            return new RcVec3f(
-                X + v2.X,
-                Y + v2.Y,
-                Z + v2.Z
-            );
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly RcVec3f Scale(float scale)
-        {
-            return new RcVec3f(
-                X * scale,
-                Y * scale,
-                Z * scale
-            );
-        }
-
-
-        /// Derives the dot product of two vectors on the xz-plane. (@p u . @p v)
-        /// @param[in] u A vector [(x, y, z)]
-        /// @param[in] v A vector [(x, y, z)]
-        /// @return The dot product on the xz-plane.
-        ///
-        /// The vectors are projected onto the xz-plane, so the y-values are
-        /// ignored.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly float Dot2D(RcVec3f v)
-        {
-            return X * v.X + Z * v.Z;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly float Dot2D(float[] v, int vi)
-        {
-            return X * v[vi] + Z * v[vi + 2];
+            return left + right;
         }
 
 
@@ -198,21 +150,6 @@ namespace DotRecast.Core.Numerics
             return hash;
         }
 
-        /// Normalizes the vector.
-        /// @param[in,out] v The vector to normalize. [(x, y, z)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Normalize()
-        {
-            float d = (float)(1.0f / Math.Sqrt(RcMath.Sqr(X) + RcMath.Sqr(Y) + RcMath.Sqr(Z)));
-            if (d != 0)
-            {
-                X *= d;
-                Y *= d;
-                Z *= d;
-            }
-        }
-
-        public const float EPSILON = 1e-6f;
 
         /// Normalizes the vector if the length is greater than zero.
         /// If the magnitude is zero, the vector is unchanged.
@@ -293,7 +230,11 @@ namespace DotRecast.Core.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RcVec3f operator +(RcVec3f left, RcVec3f right)
         {
-            return left.Add(right);
+            return new RcVec3f(
+                left.X + right.X,
+                left.Y + right.Y,
+                left.Z + right.Z
+            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -316,16 +257,6 @@ namespace DotRecast.Core.Numerics
         public static RcVec3f operator *(float left, RcVec3f right)
         {
             return right * left;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Cross(RcVec3f v1, RcVec3f v2)
-        {
-            return new RcVec3f(
-                (v1.Y * v2.Z) - (v1.Z * v2.Y),
-                (v1.Z * v2.X) - (v1.X * v2.Z),
-                (v1.X * v2.Y) - (v1.Y * v2.X)
-            );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -354,14 +285,17 @@ namespace DotRecast.Core.Numerics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Dot(RcVec3f v1, RcVec3f v2)
         {
-            return (v1.X * v2.X) + (v1.Y * v2.Y)
-                                 + (v1.Z * v2.Z);
+            return (v1.X * v2.X)
+                   + (v1.Y * v2.Y)
+                   + (v1.Z * v2.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Dot(float[] v1, float[] v2)
         {
-            return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+            return v1[0] * v2[0]
+                   + v1[1] * v2[1]
+                   + v1[2] * v2[2];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -432,24 +366,6 @@ namespace DotRecast.Core.Numerics
             return dx * dx + dy * dy + dz * dz;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float DistSqr(float[] v, int i, int j)
-        {
-            float dx = v[i] - v[j];
-            float dy = v[i + 1] - v[j + 1];
-            float dz = v[i + 2] - v[j + 2];
-            return dx * dx + dy * dy + dz * dz;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float DistSqr(float[] v1, float[] v2)
-        {
-            float dx = v2[0] - v1[0];
-            float dy = v2[1] - v1[1];
-            float dz = v2[2] - v1[2];
-            return dx * dx + dy * dy + dz * dz;
-        }
-
         /// Derives the distance between the specified points on the xz-plane.
         /// @param[in] v1 A point. [(x, y, z)]
         /// @param[in] v2 A point. [(x, y, z)]
@@ -458,28 +374,11 @@ namespace DotRecast.Core.Numerics
         /// The vectors are projected onto the xz-plane, so the y-values are
         /// ignored.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dist2D(float[] v1, float[] v2)
-        {
-            float dx = v2[0] - v1[0];
-            float dz = v2[2] - v1[2];
-            return (float)Math.Sqrt(dx * dx + dz * dz);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Dist2D(RcVec3f v1, RcVec3f v2)
         {
             float dx = v2.X - v1.X;
             float dz = v2.Z - v1.Z;
             return (float)Math.Sqrt(dx * dx + dz * dz);
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dist2DSqr(float[] v1, float[] v2)
-        {
-            float dx = v2[0] - v1[0];
-            float dz = v2[2] - v1[2];
-            return dx * dx + dz * dz;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -571,64 +470,32 @@ namespace DotRecast.Core.Numerics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Add(ref RcVec3f e0, RcVec3f a, float[] verts, int i)
+        public static RcVec3f Cross(RcVec3f v1, RcVec3f v2)
         {
-            e0.X = a.X + verts[i];
-            e0.Y = a.Y + verts[i + 1];
-            e0.Z = a.Z + verts[i + 2];
+            return new RcVec3f(
+                (v1.Y * v2.Z) - (v1.Z * v2.Y),
+                (v1.Z * v2.X) - (v1.X * v2.Z),
+                (v1.X * v2.Y) - (v1.Y * v2.X)
+            );
         }
 
-
+        /// Normalizes the vector.
+        /// @param[in,out] v The vector to normalize. [(x, y, z)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Sub(ref RcVec3f e0, float[] verts, int i, int j)
+        public static RcVec3f Normalize(RcVec3f v)
         {
-            e0.X = verts[i] - verts[j];
-            e0.Y = verts[i + 1] - verts[j + 1];
-            e0.Z = verts[i + 2] - verts[j + 2];
-        }
+            float d = (float)(1.0f / Math.Sqrt(RcMath.Sqr(v.X) + RcMath.Sqr(v.Y) + RcMath.Sqr(v.Z)));
 
+            if (d != 0)
+            {
+                return new RcVec3f(
+                    v.X *= d,
+                    v.Y *= d,
+                    v.Z *= d
+                );
+            }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Sub(ref RcVec3f e0, RcVec3f i, float[] verts, int j)
-        {
-            e0.X = i.X - verts[j];
-            e0.Y = i.Y - verts[j + 1];
-            e0.Z = i.Z - verts[j + 2];
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Cross(float[] dest, float[] v1, float[] v2)
-        {
-            dest[0] = v1[1] * v2[2] - v1[2] * v2[1];
-            dest[1] = v1[2] * v2[0] - v1[0] * v2[2];
-            dest[2] = v1[0] * v2[1] - v1[1] * v2[0];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Cross(float[] dest, RcVec3f v1, RcVec3f v2)
-        {
-            dest[0] = v1.Y * v2.Z - v1.Z * v2.Y;
-            dest[1] = v1.Z * v2.X - v1.X * v2.Z;
-            dest[2] = v1.X * v2.Y - v1.Y * v2.X;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Cross(ref RcVec3f dest, RcVec3f v1, RcVec3f v2)
-        {
-            dest.X = v1.Y * v2.Z - v1.Z * v2.Y;
-            dest.Y = v1.Z * v2.X - v1.X * v2.Z;
-            dest.Z = v1.X * v2.Y - v1.Y * v2.X;
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Normalize(ref RcVec3f v)
-        {
-            float d = (float)(1.0f / Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z));
-            v.X *= d;
-            v.Y *= d;
-            v.Z *= d;
+            return v;
         }
     }
 }
