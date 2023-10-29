@@ -53,7 +53,7 @@ namespace DotRecast.Detour
 
         public static bool VEqual(RcVec3f p0, RcVec3f p1, float thresholdSqr)
         {
-            float d = RcVec3f.DistSqr(p0, p1);
+            float d = RcVec3f.DistanceSquared(p0, p1);
             return d < thresholdSqr;
         }
 
@@ -193,7 +193,7 @@ namespace DotRecast.Detour
                 acc += dacc;
             }
 
-            float v = (float)Math.Sqrt(t);
+            float v = MathF.Sqrt(t);
 
             float a = 1 - v;
             float b = (1 - u) * v;
@@ -221,7 +221,7 @@ namespace DotRecast.Detour
 
             // Compute scaled barycentric coordinates
             float denom = v0.X * v1.Z - v0.Z * v1.X;
-            if (Math.Abs(denom) < EPS)
+            if (MathF.Abs(denom) < EPS)
             {
                 return false;
             }
@@ -309,8 +309,8 @@ namespace DotRecast.Detour
 
         public static float DistancePtSegSqr2D(RcVec3f pt, float[] verts, int p, int q, out float t)
         {
-            var vp = new RcVec3f(verts.AsSpan(p));
-            var vq = new RcVec3f(verts.AsSpan(q));
+            var vp = RcVecUtils.Create(verts, p);
+            var vq = RcVecUtils.Create(verts, q);
             return DistancePtSegSqr2D(pt, vp, vq, out t);
         }
 
@@ -362,9 +362,9 @@ namespace DotRecast.Detour
                 RcVec3f vpi = verts[i];
                 var edge = RcVec3f.Subtract(vpi, vpj);
                 var diff = RcVec3f.Subtract(p0v, vpj);
-                float n = RcVec3f.Perp2D(edge, diff);
-                float d = RcVec3f.Perp2D(dir, edge);
-                if (Math.Abs(d) < EPS)
+                float n = RcVecUtils.Perp2D(edge, diff);
+                float d = RcVecUtils.Perp2D(dir, edge);
+                if (MathF.Abs(d) < EPS)
                 {
                     // S is nearly parallel to this edge
                     if (n < 0)
@@ -425,14 +425,14 @@ namespace DotRecast.Detour
             RcVec3f u = RcVec3f.Subtract(aq, ap);
             RcVec3f v = RcVec3f.Subtract(bq, bp);
             RcVec3f w = RcVec3f.Subtract(ap, bp);
-            float d = RcVec3f.PerpXZ(u, v);
-            if (Math.Abs(d) < 1e-6f)
+            float d = RcVecUtils.PerpXZ(u, v);
+            if (MathF.Abs(d) < 1e-6f)
             {
                 return false;
             }
 
-            s = RcVec3f.PerpXZ(v, w) / d;
-            t = RcVec3f.PerpXZ(u, w) / d;
+            s = RcVecUtils.PerpXZ(v, w) / d;
+            t = RcVecUtils.PerpXZ(u, w) / d;
 
             return true;
         }

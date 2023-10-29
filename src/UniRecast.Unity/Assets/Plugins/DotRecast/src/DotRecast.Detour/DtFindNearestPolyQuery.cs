@@ -31,12 +31,12 @@ namespace DotRecast.Detour
             RcVec3f diff = RcVec3f.Subtract(_center, closestPtPoly);
             if (posOverPoly)
             {
-                d = Math.Abs(diff.Y) - tile.data.header.walkableClimb;
+                d = MathF.Abs(diff.Y) - tile.data.header.walkableClimb;
                 d = d > 0 ? d * d : 0;
             }
             else
             {
-                d = RcVec3f.LenSqr(diff);
+                d = diff.LengthSquared();
             }
 
             if (d < _nearestDistanceSqr)

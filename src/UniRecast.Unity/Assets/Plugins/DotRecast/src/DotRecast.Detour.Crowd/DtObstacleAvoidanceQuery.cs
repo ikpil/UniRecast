@@ -175,7 +175,7 @@ namespace DotRecast.Detour.Crowd
                 return false; // no intersection.
 
             a = 1.0f / a;
-            float rd = (float)Math.Sqrt(d);
+            float rd = MathF.Sqrt(d);
 
             tmin = (b - rd) * a;
             tmax = (b + rd) * a;
@@ -187,16 +187,16 @@ namespace DotRecast.Detour.Crowd
         {
             RcVec3f v = RcVec3f.Subtract(bq, bp);
             RcVec3f w = RcVec3f.Subtract(ap, bp);
-            float d = RcVec3f.Perp2D(u, v);
-            if (Math.Abs(d) < 1e-6f)
+            float d = RcVecUtils.Perp2D(u, v);
+            if (MathF.Abs(d) < 1e-6f)
                 return false;
 
             d = 1.0f / d;
-            t = RcVec3f.Perp2D(v, w) * d;
+            t = RcVecUtils.Perp2D(v, w) * d;
             if (t < 0 || t > 1)
                 return false;
 
-            float s = RcVec3f.Perp2D(u, w) * d;
+            float s = RcVecUtils.Perp2D(u, w) * d;
             if (s < 0 || s > 1)
                 return false;
 
@@ -217,8 +217,8 @@ namespace DotRecast.Detour.Crowd
             float minPenalty, DtObstacleAvoidanceDebugData debug)
         {
             // penalty for straying away from the desired and current velocities
-            float vpen = m_params.weightDesVel * (RcVec3f.Dist2D(vcand, dvel) * m_invVmax);
-            float vcpen = m_params.weightCurVel * (RcVec3f.Dist2D(vcand, vel) * m_invVmax);
+            float vpen = m_params.weightDesVel * (RcVecUtils.Dist2D(vcand, dvel) * m_invVmax);
+            float vcpen = m_params.weightCurVel * (RcVecUtils.Dist2D(vcand, vel) * m_invVmax);
 
             // find the threshold hit time to bail out based on the early out penalty
             // (see how the penalty is calculated below to understand)
@@ -364,7 +364,7 @@ namespace DotRecast.Detour.Crowd
         // vector normalization that ignores the y-component.
         void DtNormalize2D(float[] v)
         {
-            float d = (float)Math.Sqrt(v[0] * v[0] + v[2] * v[2]);
+            float d = MathF.Sqrt(v[0] * v[0] + v[2] * v[2]);
             if (d == 0)
                 return;
             d = 1.0f / d;
@@ -376,8 +376,8 @@ namespace DotRecast.Detour.Crowd
         RcVec3f DtRotate2D(float[] v, float ang)
         {
             RcVec3f dest = new RcVec3f();
-            float c = (float)Math.Cos(ang);
-            float s = (float)Math.Sin(ang);
+            float c = MathF.Cos(ang);
+            float s = MathF.Sin(ang);
             dest.X = v[0] * c - v[2] * s;
             dest.Z = v[0] * s + v[2] * c;
             dest.Y = v[1];
@@ -412,8 +412,8 @@ namespace DotRecast.Detour.Crowd
             int nd = Math.Clamp(ndivs, 1, DT_MAX_PATTERN_DIVS);
             int nr = Math.Clamp(nrings, 1, DT_MAX_PATTERN_RINGS);
             float da = (1.0f / nd) * DT_PI * 2;
-            float ca = (float)Math.Cos(da);
-            float sa = (float)Math.Sin(da);
+            float ca = MathF.Cos(da);
+            float sa = MathF.Sin(da);
 
             // desired direction
             float[] ddir = new float[6];

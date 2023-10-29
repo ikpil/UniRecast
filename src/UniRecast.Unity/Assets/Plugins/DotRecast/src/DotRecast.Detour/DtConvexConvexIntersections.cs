@@ -53,10 +53,10 @@ namespace DotRecast.Detour
 
             do
             {
-                a = new RcVec3f(p.AsSpan(3 * (ai % n)));
-                b = new RcVec3f(q.AsSpan(3 * (bi % m)));
-                a1 = new RcVec3f(p.AsSpan(3 * ((ai + n - 1) % n))); // prev a
-                b1 = new RcVec3f(q.AsSpan(3 * ((bi + m - 1) % m))); // prev b
+                a = RcVecUtils.Create(p, 3 * (ai % n));
+                b = RcVecUtils.Create(q, 3 * (bi % m));
+                a1 = RcVecUtils.Create(p, 3 * ((ai + n - 1) % n)); // prev a
+                b1 = RcVecUtils.Create(q, 3 * ((bi + m - 1) % m)); // prev b
 
                 RcVec3f A = RcVec3f.Subtract(a, a1);
                 RcVec3f B = RcVec3f.Subtract(b, b1);
@@ -64,7 +64,7 @@ namespace DotRecast.Detour
                 float cross = B.X * A.Z - A.X * B.Z; // TriArea2D({0, 0}, A, B);
                 float aHB = DtUtils.TriArea2D(b1, b, a);
                 float bHA = DtUtils.TriArea2D(a1, a, b);
-                if (Math.Abs(cross) < EPSILON)
+                if (MathF.Abs(cross) < EPSILON)
                 {
                     cross = 0f;
                 }
@@ -100,7 +100,7 @@ namespace DotRecast.Detour
                     return null;
                 }
                 /* Special case: A & B collinear. */
-                else if (parallel && Math.Abs(aHB) < EPSILON && Math.Abs(bHA) < EPSILON)
+                else if (parallel && MathF.Abs(aHB) < EPSILON && MathF.Abs(bHA) < EPSILON)
                 {
                     /* Advance but do not output point. */
                     if (f == DtConvexConvexInFlag.Pin)
@@ -276,7 +276,7 @@ namespace DotRecast.Detour
 
         private static bool Between(RcVec3f a, RcVec3f b, RcVec3f c)
         {
-            if (Math.Abs(a.X - b.X) > Math.Abs(a.Z - b.Z))
+            if (MathF.Abs(a.X - b.X) > MathF.Abs(a.Z - b.Z))
             {
                 return ((a.X <= c.X) && (c.X <= b.X)) || ((a.X >= c.X) && (c.X >= b.X));
             }

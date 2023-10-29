@@ -242,8 +242,8 @@ namespace DotRecast.Detour
      */
         public void CalcTileLoc(RcVec3f pos, out int tx, out int ty)
         {
-            tx = (int)Math.Floor((pos.X - m_orig.X) / m_tileWidth);
-            ty = (int)Math.Floor((pos.Z - m_orig.Z) / m_tileHeight);
+            tx = (int)MathF.Floor((pos.X - m_orig.X) / m_tileWidth);
+            ty = (int)MathF.Floor((pos.Z - m_orig.Z) / m_tileHeight);
         }
 
         /// Gets the tile and polygon for the specified polygon reference.
@@ -401,13 +401,13 @@ namespace DotRecast.Detour
 
                     // Calc polygon bounds.
                     int v = p.verts[0] * 3;
-                    bmin = new RcVec3f(tile.data.verts.AsSpan(v));
-                    bmax = new RcVec3f(tile.data.verts.AsSpan(v));
+                    bmin = RcVecUtils.Create(tile.data.verts, v);
+                    bmax = RcVecUtils.Create(tile.data.verts, v);
                     for (int j = 1; j < p.vertCount; ++j)
                     {
                         v = p.verts[j] * 3;
-                        bmin.Min(tile.data.verts, v);
-                        bmax.Max(tile.data.verts, v);
+                        bmin = RcVecUtils.Min(bmin, tile.data.verts, v);
+                        bmax = RcVecUtils.Max(bmax, tile.data.verts, v);
                     }
 
                     if (DtUtils.OverlapBounds(qmin, qmax, bmin, bmax))
@@ -779,8 +779,8 @@ namespace DotRecast.Detour
                                 tmax = temp;
                             }
 
-                            link.bmin = (int)Math.Round(Math.Clamp(tmin, 0.0f, 1.0f) * 255.0f);
-                            link.bmax = (int)Math.Round(Math.Clamp(tmax, 0.0f, 1.0f) * 255.0f);
+                            link.bmin = (int)MathF.Round(Math.Clamp(tmin, 0.0f, 1.0f) * 255.0f);
+                            link.bmax = (int)MathF.Round(Math.Clamp(tmax, 0.0f, 1.0f) * 255.0f);
                         }
                         else if (dir == 2 || dir == 6)
                         {
@@ -795,8 +795,8 @@ namespace DotRecast.Detour
                                 tmax = temp;
                             }
 
-                            link.bmin = (int)Math.Round(Math.Clamp(tmin, 0.0f, 1.0f) * 255.0f);
-                            link.bmax = (int)Math.Round(Math.Clamp(tmax, 0.0f, 1.0f) * 255.0f);
+                            link.bmin = (int)MathF.Round(Math.Clamp(tmin, 0.0f, 1.0f) * 255.0f);
+                            link.bmax = (int)MathF.Round(Math.Clamp(tmax, 0.0f, 1.0f) * 255.0f);
                         }
                     }
                 }
@@ -926,7 +926,7 @@ namespace DotRecast.Detour
                     int vd = poly.verts[(j + 1) % nv] * 3;
                     float bpos = GetSlabCoord(tile.data.verts, vc, side);
                     // Segments are not close enough.
-                    if (Math.Abs(apos - bpos) > 0.01f)
+                    if (MathF.Abs(apos - bpos) > 0.01f)
                     {
                         continue;
                     }
@@ -1372,12 +1372,12 @@ namespace DotRecast.Detour
                 RcVec3f diff = RcVec3f.Subtract(center, closestPtPoly);
                 if (posOverPoly)
                 {
-                    d = Math.Abs(diff.Y) - tile.data.header.walkableClimb;
+                    d = MathF.Abs(diff.Y) - tile.data.header.walkableClimb;
                     d = d > 0 ? d * d : 0;
                 }
                 else
                 {
-                    d = RcVec3f.LenSqr(diff);
+                    d = diff.LengthSquared();
                 }
 
                 if (d < nearestDistanceSqr)
@@ -1569,8 +1569,8 @@ namespace DotRecast.Detour
                 }
             }
 
-            startPos = new RcVec3f(tile.data.verts.AsSpan(poly.verts[idx0] * 3));
-            endPos = new RcVec3f(tile.data.verts.AsSpan(poly.verts[idx1] * 3));
+            startPos = RcVecUtils.Create(tile.data.verts, poly.verts[idx0] * 3);
+            endPos = RcVecUtils.Create(tile.data.verts, poly.verts[idx1] * 3);
 
             return DtStatus.DT_SUCCSESS;
         }

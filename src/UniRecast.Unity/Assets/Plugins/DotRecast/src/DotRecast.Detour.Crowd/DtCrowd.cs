@@ -877,7 +877,7 @@ namespace DotRecast.Detour.Crowd
                 // Update the collision boundary after certain distance has been passed or
                 // if it has become invalid.
                 float updateThr = ag.option.collisionQueryRange * 0.25f;
-                if (RcVec3f.Dist2DSqr(ag.npos, ag.boundary.GetCenter()) > RcMath.Sqr(updateThr)
+                if (RcVecUtils.Dist2DSqr(ag.npos, ag.boundary.GetCenter()) > RcMath.Sqr(updateThr)
                     || !ag.boundary.IsValid(_navQuery, _filters[ag.option.queryFilterType]))
                 {
                     ag.boundary.Update(ag.corridor.GetFirstPoly(), ag.npos, ag.option.collisionQueryRange, _navQuery,
@@ -905,13 +905,13 @@ namespace DotRecast.Detour.Crowd
 
                 // Check for overlap.
                 RcVec3f diff = RcVec3f.Subtract(pos, ag.npos);
-                if (Math.Abs(diff.Y) >= (height + ag.option.height) / 2.0f)
+                if (MathF.Abs(diff.Y) >= (height + ag.option.height) / 2.0f)
                 {
                     continue;
                 }
 
                 diff.Y = 0;
-                float distSqr = RcVec3f.LenSqr(diff);
+                float distSqr = diff.LengthSquared();
                 if (distSqr > RcMath.Sqr(range))
                 {
                     continue;
@@ -1005,7 +1005,7 @@ namespace DotRecast.Detour.Crowd
                         anim.polyRef = refs[1];
                         anim.active = true;
                         anim.t = 0.0f;
-                        anim.tmax = (RcVec3f.Dist2D(anim.startPos, anim.endPos) / ag.option.maxSpeed) * 0.5f;
+                        anim.tmax = (RcVecUtils.Dist2D(anim.startPos, anim.endPos) / ag.option.maxSpeed) * 0.5f;
 
                         ag.state = DtCrowdAgentState.DT_CROWDAGENT_STATE_OFFMESH;
                         ag.corners.Clear();
@@ -1080,7 +1080,7 @@ namespace DotRecast.Detour.Crowd
                         RcVec3f diff = RcVec3f.Subtract(ag.npos, nei.npos);
                         diff.Y = 0;
 
-                        float distSqr = RcVec3f.LenSqr(diff);
+                        float distSqr = diff.LengthSquared();
                         if (distSqr < 0.00001f)
                         {
                             continue;
@@ -1091,19 +1091,19 @@ namespace DotRecast.Detour.Crowd
                             continue;
                         }
 
-                        float dist = (float)Math.Sqrt(distSqr);
+                        float dist = MathF.Sqrt(distSqr);
                         float weight = separationWeight * (1.0f - RcMath.Sqr(dist * invSeparationDist));
 
-                        disp = RcVec3f.Mad(disp, diff, weight / dist);
+                        disp = RcVecUtils.Mad(disp, diff, weight / dist);
                         w += 1.0f;
                     }
 
                     if (w > 0.0001f)
                     {
                         // Adjust desired velocity.
-                        dvel = RcVec3f.Mad(dvel, disp, 1.0f / w);
+                        dvel = RcVecUtils.Mad(dvel, disp, 1.0f / w);
                         // Clamp desired velocity to desired speed.
-                        float speedSqr = RcVec3f.LenSqr(dvel);
+                        float speedSqr = dvel.LengthSquared();
                         float desiredSqr = RcMath.Sqr(ag.desiredSpeed);
                         if (speedSqr > desiredSqr)
                         {
@@ -1227,13 +1227,13 @@ namespace DotRecast.Detour.Crowd
                         RcVec3f diff = RcVec3f.Subtract(ag.npos, nei.npos);
                         diff.Y = 0;
 
-                        float dist = RcVec3f.LenSqr(diff);
+                        float dist = diff.LengthSquared();
                         if (dist > RcMath.Sqr(ag.option.radius + nei.option.radius))
                         {
                             continue;
                         }
 
-                        dist = (float)Math.Sqrt(dist);
+                        dist = MathF.Sqrt(dist);
                         float pen = (ag.option.radius + nei.option.radius) - dist;
                         if (dist < 0.0001f)
                         {
@@ -1254,7 +1254,7 @@ namespace DotRecast.Detour.Crowd
                             pen = (1.0f / dist) * (pen * 0.5f) * _config.collisionResolveFactor;
                         }
 
-                        ag.disp = RcVec3f.Mad(ag.disp, diff, pen);
+                        ag.disp = RcVecUtils.Mad(ag.disp, diff, pen);
 
                         w += 1.0f;
                     }

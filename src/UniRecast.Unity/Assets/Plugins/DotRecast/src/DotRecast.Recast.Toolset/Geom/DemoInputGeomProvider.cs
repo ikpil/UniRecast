@@ -57,14 +57,12 @@ namespace DotRecast.Recast.Toolset.Geom
             this.faces = faces;
             normals = new float[faces.Length];
             CalculateNormals();
-            bmin = RcVec3f.Zero;
-            bmax = RcVec3f.Zero;
-            RcVec3f.Copy(ref bmin, vertices, 0);
-            RcVec3f.Copy(ref bmax, vertices, 0);
+            bmin = RcVecUtils.Create(vertices);
+            bmax = RcVecUtils.Create(vertices);
             for (int i = 1; i < vertices.Length / 3; i++)
             {
-                bmin.Min(vertices, i * 3);
-                bmax.Max(vertices, i * 3);
+                bmin = RcVecUtils.Min(bmin, vertices, i * 3);
+                bmax = RcVecUtils.Max(bmax, vertices, i * 3);
             }
 
             _mesh = new RcTriMesh(vertices, faces);
@@ -92,18 +90,13 @@ namespace DotRecast.Recast.Toolset.Geom
                 int v0 = faces[i] * 3;
                 int v1 = faces[i + 1] * 3;
                 int v2 = faces[i + 2] * 3;
-                RcVec3f e0 = new RcVec3f();
-                RcVec3f e1 = new RcVec3f();
-                for (int j = 0; j < 3; ++j)
-                {
-                    e0[j] = vertices[v1 + j] - vertices[v0 + j];
-                    e1[j] = vertices[v2 + j] - vertices[v0 + j];
-                }
+                var e0 = RcVecUtils.Subtract(vertices, v1, v0);
+                var e1 = RcVecUtils.Subtract(vertices, v2, v0);
 
                 normals[i] = e0.Y * e1.Z - e0.Z * e1.Y;
                 normals[i + 1] = e0.Z * e1.X - e0.X * e1.Z;
                 normals[i + 2] = e0.X * e1.Y - e0.Y * e1.X;
-                float d = (float)Math.Sqrt(normals[i] * normals[i] + normals[i + 1] * normals[i + 1] + normals[i + 2] * normals[i + 2]);
+                float d = MathF.Sqrt(normals[i] * normals[i] + normals[i + 1] * normals[i + 1] + normals[i + 2] * normals[i + 2]);
                 if (d > 0)
                 {
                     d = 1.0f / d;

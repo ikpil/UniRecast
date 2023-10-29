@@ -457,14 +457,12 @@ namespace DotRecast.Recast
             int zStride = xSize; // For readability
 
             // Compute the bounding box of the polygon
-            RcVec3f bmin = new RcVec3f();
-            RcVec3f bmax = new RcVec3f();
-            RcVec3f.Copy(ref bmin, verts, 0);
-            RcVec3f.Copy(ref bmax, verts, 0);
+            RcVec3f bmin = RcVecUtils.Create(verts);
+            RcVec3f bmax = RcVecUtils.Create(verts);
             for (int i = 3; i < verts.Length; i += 3)
             {
-                bmin.Min(verts, i);
-                bmax.Max(verts, i);
+                bmin = RcVecUtils.Min(bmin, verts, i);
+                bmax = RcVecUtils.Max(bmax, verts, i);
             }
 
             bmin.Y = minY;
@@ -649,8 +647,8 @@ namespace DotRecast.Recast
                     RcCompactCell cell = compactHeightfield.cells[x + z * zStride];
                     int maxSpanIndex = cell.index + cell.count;
 
-                    float cellX = compactHeightfield.bmin[0] + ((float)x + 0.5f) * compactHeightfield.cs;
-                    float cellZ = compactHeightfield.bmin[2] + ((float)z + 0.5f) * compactHeightfield.cs;
+                    float cellX = compactHeightfield.bmin.X + ((float)x + 0.5f) * compactHeightfield.cs;
+                    float cellZ = compactHeightfield.bmin.Z + ((float)z + 0.5f) * compactHeightfield.cs;
                     float deltaX = cellX - position[0];
                     float deltaZ = cellZ - position[2];
 
@@ -755,19 +753,19 @@ namespace DotRecast.Recast
                 int vertIndexB = vertIndex;
                 int vertIndexC = (vertIndex + 1) % numVerts;
 
-                RcVec3f vertA = new RcVec3f(verts.AsSpan(vertIndexA * 3));
-                RcVec3f vertB = new RcVec3f(verts.AsSpan(vertIndexB * 3));
-                RcVec3f vertC = new RcVec3f(verts.AsSpan(vertIndexC * 3));
+                RcVec3f vertA = RcVecUtils.Create(verts, vertIndexA * 3);
+                RcVec3f vertB = RcVecUtils.Create(verts, vertIndexB * 3);
+                RcVec3f vertC = RcVecUtils.Create(verts, vertIndexC * 3);
 
                 // From A to B on the x/z plane
                 RcVec3f prevSegmentDir = RcVec3f.Subtract(vertB, vertA);
                 prevSegmentDir.Y = 0; // Squash onto x/z plane
-                prevSegmentDir.SafeNormalize();
+                prevSegmentDir = RcVecUtils.SafeNormalize(prevSegmentDir);
 
                 // From B to C on the x/z plane
                 RcVec3f currSegmentDir = RcVec3f.Subtract(vertC, vertB);
                 currSegmentDir.Y = 0; // Squash onto x/z plane
-                currSegmentDir.SafeNormalize();
+                currSegmentDir = RcVecUtils.SafeNormalize(currSegmentDir);
 
                 // The y component of the cross product of the two normalized segment directions.
                 // The X and Z components of the cross product are both zero because the two
@@ -794,7 +792,7 @@ namespace DotRecast.Recast
                 bool bevel = cornerMiterSqMag * MITER_LIMIT * MITER_LIMIT < 1.0f;
 
                 // Scale the corner miter so it's proportional to how much the corner should be offset compared to the edges.
-                if (cornerMiterSqMag > RcVec3f.EPSILON)
+                if (cornerMiterSqMag > RcVecUtils.EPSILON)
                 {
                     float scale = 1.0f / cornerMiterSqMag;
                     cornerMiterX *= scale;

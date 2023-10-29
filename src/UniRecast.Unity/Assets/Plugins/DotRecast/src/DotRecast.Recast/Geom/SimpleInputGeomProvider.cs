@@ -77,14 +77,12 @@ namespace DotRecast.Recast.Geom
             this.faces = faces;
             normals = new float[faces.Length];
             CalculateNormals();
-            bmin = RcVec3f.Zero;
-            bmax = RcVec3f.Zero;
-            RcVec3f.Copy(ref bmin, vertices, 0);
-            RcVec3f.Copy(ref bmax, vertices, 0);
+            bmin = RcVecUtils.Create(vertices);
+            bmax = RcVecUtils.Create(vertices);
             for (int i = 1; i < vertices.Length / 3; i++)
             {
-                bmin.Min(vertices, i * 3);
-                bmax.Max(vertices, i * 3);
+                bmin = RcVecUtils.Min(bmin, vertices, i * 3);
+                bmax = RcVecUtils.Max(bmax, vertices, i * 3);
             }
 
             _mesh = new RcTriMesh(vertices, faces);
@@ -165,7 +163,7 @@ namespace DotRecast.Recast.Geom
                 normals[i] = e0.Y * e1.Z - e0.Z * e1.Y;
                 normals[i + 1] = e0.Z * e1.X - e0.X * e1.Z;
                 normals[i + 2] = e0.X * e1.Y - e0.Y * e1.X;
-                float d = (float)Math.Sqrt(normals[i] * normals[i] + normals[i + 1] * normals[i + 1] + normals[i + 2] * normals[i + 2]);
+                float d = MathF.Sqrt(normals[i] * normals[i] + normals[i + 1] * normals[i + 1] + normals[i + 2] * normals[i + 2]);
                 if (d > 0)
                 {
                     d = 1.0f / d;

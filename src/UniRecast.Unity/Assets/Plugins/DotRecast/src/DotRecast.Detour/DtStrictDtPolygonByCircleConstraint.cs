@@ -22,10 +22,10 @@ namespace DotRecast.Detour
             var temp = new float[CIRCLE_SEGMENTS * 3];
             for (int i = 0; i < CIRCLE_SEGMENTS; i++)
             {
-                double a = i * Math.PI * 2 / CIRCLE_SEGMENTS;
-                temp[3 * i] = (float)Math.Cos(a);
+                float a = i * MathF.PI * 2 / CIRCLE_SEGMENTS;
+                temp[3 * i] = MathF.Cos(a);
                 temp[3 * i + 1] = 0;
-                temp[3 * i + 2] = (float)-Math.Sin(a);
+                temp[3 * i + 2] = -MathF.Sin(a);
             }
 
             return temp;
@@ -37,7 +37,7 @@ namespace DotRecast.Detour
             int outsideVertex = -1;
             for (int pv = 0; pv < verts.Length; pv += 3)
             {
-                if (RcVec3f.Dist2DSqr(center, verts, pv) > radiusSqr)
+                if (RcVecUtils.Dist2DSqr(center, verts, pv) > radiusSqr)
                 {
                     outsideVertex = pv;
                     break;
