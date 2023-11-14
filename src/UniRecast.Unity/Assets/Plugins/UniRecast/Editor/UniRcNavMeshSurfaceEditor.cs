@@ -257,32 +257,29 @@ namespace UniRecast.Editor
             if (tile.data.detailMeshes != null)
             {
                 DtPolyDetail pd = tile.data.detailMeshes[index];
-                if (pd != null)
+                for (int j = 0; j < pd.triCount; ++j)
                 {
-                    for (int j = 0; j < pd.triCount; ++j)
+                    int t = (pd.triBase + j) * 4;
+                    for (int k = 0; k < 3; ++k)
                     {
-                        int t = (pd.triBase + j) * 4;
-                        for (int k = 0; k < 3; ++k)
+                        int v = tile.data.detailTris[t + k];
+                        if (v < p.vertCount)
                         {
-                            int v = tile.data.detailTris[t + k];
-                            if (v < p.vertCount)
-                            {
-                                polygonVertices[k] = new Vector3(
-                                    -tile.data.verts[p.verts[v] * 3],
-                                    tile.data.verts[p.verts[v] * 3 + 1],
-                                    tile.data.verts[p.verts[v] * 3 + 2]);
-                            }
-                            else
-                            {
-                                polygonVertices[k] = new Vector3(
-                                    -tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3],
-                                    tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3 + 1],
-                                    tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3 + 2]);
-                            }
+                            polygonVertices[k] = new Vector3(
+                                -tile.data.verts[p.verts[v] * 3],
+                                tile.data.verts[p.verts[v] * 3 + 1],
+                                tile.data.verts[p.verts[v] * 3 + 2]);
                         }
-
-                        Handles.DrawAAConvexPolygon(polygonVertices);
+                        else
+                        {
+                            polygonVertices[k] = new Vector3(
+                                -tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3],
+                                tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3 + 1],
+                                tile.data.detailVerts[(pd.vertBase + v - p.vertCount) * 3 + 2]);
+                        }
                     }
+
+                    Handles.DrawAAConvexPolygon(polygonVertices);
                 }
             }
             else

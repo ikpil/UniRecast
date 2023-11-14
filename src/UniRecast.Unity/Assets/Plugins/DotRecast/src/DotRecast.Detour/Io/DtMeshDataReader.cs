@@ -53,10 +53,10 @@ namespace DotRecast.Detour.Io
             DtMeshHeader header = new DtMeshHeader();
             data.header = header;
             header.magic = buf.GetInt();
-            if (header.magic != DtMeshHeader.DT_NAVMESH_MAGIC)
+            if (header.magic != DtNavMesh.DT_NAVMESH_MAGIC)
             {
                 header.magic = IOUtils.SwapEndianness(header.magic);
-                if (header.magic != DtMeshHeader.DT_NAVMESH_MAGIC)
+                if (header.magic != DtNavMesh.DT_NAVMESH_MAGIC)
                 {
                     throw new IOException("Invalid magic");
                 }
@@ -65,16 +65,16 @@ namespace DotRecast.Detour.Io
             }
 
             header.version = buf.GetInt();
-            if (header.version != DtMeshHeader.DT_NAVMESH_VERSION)
+            if (header.version != DtNavMesh.DT_NAVMESH_VERSION)
             {
-                if (header.version < DtMeshHeader.DT_NAVMESH_VERSION_RECAST4J_FIRST
-                    || header.version > DtMeshHeader.DT_NAVMESH_VERSION_RECAST4J_LAST)
+                if (header.version < DtNavMesh.DT_NAVMESH_VERSION_RECAST4J_FIRST
+                    || header.version > DtNavMesh.DT_NAVMESH_VERSION_RECAST4J_LAST)
                 {
                     throw new IOException("Invalid version " + header.version);
                 }
             }
 
-            bool cCompatibility = header.version == DtMeshHeader.DT_NAVMESH_VERSION;
+            bool cCompatibility = header.version == DtNavMesh.DT_NAVMESH_VERSION;
             header.x = buf.GetInt();
             header.y = buf.GetInt();
             header.layer = buf.GetInt();
@@ -141,7 +141,7 @@ namespace DotRecast.Detour.Io
             for (int i = 0; i < polys.Length; i++)
             {
                 polys[i] = new DtPoly(i, maxVertPerPoly);
-                if (header.version < DtMeshHeader.DT_NAVMESH_VERSION_RECAST4J_NO_POLY_FIRSTLINK)
+                if (header.version < DtNavMesh.DT_NAVMESH_VERSION_RECAST4J_NO_POLY_FIRSTLINK)
                 {
                     buf.GetInt(); // polys[i].firstLink
                 }
@@ -169,11 +169,11 @@ namespace DotRecast.Detour.Io
             DtPolyDetail[] polys = new DtPolyDetail[header.detailMeshCount];
             for (int i = 0; i < polys.Length; i++)
             {
-                polys[i] = new DtPolyDetail();
-                polys[i].vertBase = buf.GetInt();
-                polys[i].triBase = buf.GetInt();
-                polys[i].vertCount = buf.Get() & 0xFF;
-                polys[i].triCount = buf.Get() & 0xFF;
+                int vertBase = buf.GetInt();
+                int triBase = buf.GetInt();
+                int vertCount = buf.Get() & 0xFF;
+                int triCount = buf.Get() & 0xFF;
+                polys[i] = new DtPolyDetail(vertBase, triBase, vertCount, triCount);
                 if (cCompatibility)
                 {
                     buf.GetShort(); // C struct padding
@@ -200,7 +200,7 @@ namespace DotRecast.Detour.Io
             for (int i = 0; i < nodes.Length; i++)
             {
                 nodes[i] = new DtBVNode();
-                if (header.version < DtMeshHeader.DT_NAVMESH_VERSION_RECAST4J_32BIT_BVTREE)
+                if (header.version < DtNavMesh.DT_NAVMESH_VERSION_RECAST4J_32BIT_BVTREE)
                 {
                     for (int j = 0; j < 3; j++)
                     {
@@ -237,9 +237,11 @@ namespace DotRecast.Detour.Io
             for (int i = 0; i < cons.Length; i++)
             {
                 cons[i] = new DtOffMeshConnection();
-                for (int j = 0; j < 6; j++)
+                for (int j = 0; j < 2; j++)
                 {
-                    cons[i].pos[j] = buf.GetFloat();
+                    cons[i].pos[j].X = buf.GetFloat();
+                    cons[i].pos[j].Y = buf.GetFloat();
+                    cons[i].pos[j].Z = buf.GetFloat();
                 }
 
                 cons[i].rad = buf.GetFloat();

@@ -27,6 +27,23 @@ namespace DotRecast.Detour
 {
     public class DtNavMesh
     {
+        /** A magic number used to detect compatibility of navigation tile data. */
+        public const int DT_NAVMESH_MAGIC = 'D' << 24 | 'N' << 16 | 'A' << 8 | 'V';
+
+        /** A version number used to detect compatibility of navigation tile data. */
+        public const int DT_NAVMESH_VERSION = 7;
+
+        public const int DT_NAVMESH_VERSION_RECAST4J_FIRST = 0x8807;
+        public const int DT_NAVMESH_VERSION_RECAST4J_NO_POLY_FIRSTLINK = 0x8808;
+        public const int DT_NAVMESH_VERSION_RECAST4J_32BIT_BVTREE = 0x8809;
+        public const int DT_NAVMESH_VERSION_RECAST4J_LAST = 0x8809;
+
+        /** A magic number used to detect the compatibility of navigation tile states. */
+        public const int DT_NAVMESH_STATE_MAGIC = 'D' << 24 | 'N' << 16 | 'M' << 8 | 'S';
+
+        /** A version number used to detect compatibility of navigation tile states. */
+        public const int DT_NAVMESH_STATE_VERSION = 1;
+        
         public const int DT_SALT_BITS = 16;
         public const int DT_TILE_BITS = 28;
         public const int DT_POLY_BITS = 20;
@@ -838,10 +855,7 @@ namespace DotRecast.Detour
                 };
 
                 // Find polygon to connect to.
-                RcVec3f p = new RcVec3f();
-                p.X = targetCon.pos[3];
-                p.Y = targetCon.pos[4];
-                p.Z = targetCon.pos[5];
+                RcVec3f p = targetCon.pos[1];
                 var refs = FindNearestPolyInTile(tile, p, ext, out var nearestPt);
                 if (refs == 0)
                 {
@@ -1072,16 +1086,16 @@ namespace DotRecast.Detour
                 };
 
                 // Find polygon to connect to.
-                var refs = FindNearestPolyInTile(tile, new RcVec3f(con.pos[0], con.pos[1], con.pos[2]), ext, out var nearestPt);
+                var refs = FindNearestPolyInTile(tile, con.pos[0], ext, out var nearestPt);
                 if (refs == 0)
                 {
                     continue;
                 }
 
-                float[] p = con.pos; // First vertex
+                RcVec3f[] p = con.pos; // First vertex
                 // findNearestPoly may return too optimistic results, further check
                 // to make sure.
-                if (RcMath.Sqr(nearestPt.X - p[0]) + RcMath.Sqr(nearestPt.Z - p[2]) > RcMath.Sqr(con.rad))
+                if (RcMath.Sqr(nearestPt.X - p[0].X) + RcMath.Sqr(nearestPt.Z - p[0].Z) > RcMath.Sqr(con.rad))
                 {
                     continue;
                 }
@@ -1137,7 +1151,7 @@ namespace DotRecast.Detour
 
             if (tile.data.detailMeshes != null)
             {
-                DtPolyDetail pd = tile.data.detailMeshes[ip];
+                ref DtPolyDetail pd = ref tile.data.detailMeshes[ip];
                 for (int i = 0; i < pd.triCount; i++)
                 {
                     int ti = (pd.triBase + i) * 4;
@@ -1237,7 +1251,7 @@ namespace DotRecast.Detour
             int nv = poly.vertCount;
             for (int i = 0; i < nv; ++i)
             {
-                Array.Copy(tile.data.verts, poly.verts[i] * 3, verts, i * 3, 3);
+                RcArrays.Copy(tile.data.verts, poly.verts[i] * 3, verts, i * 3, 3);
             }
 
             if (!DtUtils.PointInPolygon(pos, verts, nv))
@@ -1248,7 +1262,7 @@ namespace DotRecast.Detour
             // Find height at the location.
             if (tile.data.detailMeshes != null)
             {
-                DtPolyDetail pd = tile.data.detailMeshes[ip];
+                ref DtPolyDetail pd = ref tile.data.detailMeshes[ip];
                 for (int j = 0; j < pd.triCount; ++j)
                 {
                     int t = (pd.triBase + j) * 4;

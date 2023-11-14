@@ -19,6 +19,7 @@ freely, subject to the following restrictions:
 */
 
 using System;
+using DotRecast.Core;
 using DotRecast.Core.Numerics;
 
 namespace DotRecast.Detour
@@ -423,8 +424,8 @@ namespace DotRecast.Detour
             DtOffMeshConnection[] offMeshCons = new DtOffMeshConnection[storedOffMeshConCount];
 
             // Store header
-            header.magic = DtMeshHeader.DT_NAVMESH_MAGIC;
-            header.version = DtMeshHeader.DT_NAVMESH_VERSION;
+            header.magic = DtNavMesh.DT_NAVMESH_MAGIC;
+            header.version = DtNavMesh.DT_NAVMESH_VERSION;
             header.x = option.tileX;
             header.y = option.tileZ;
             header.layer = option.tileLayer;
@@ -468,7 +469,7 @@ namespace DotRecast.Detour
                 {
                     int linkv = i * 2 * 3;
                     int v = (offMeshVertsBase + n * 2) * 3;
-                    Array.Copy(option.offMeshConVerts, linkv, navVerts, v, 6);
+                    RcArrays.Copy(option.offMeshConVerts, linkv, navVerts, v, 6);
                     n++;
                 }
             }
@@ -545,26 +546,25 @@ namespace DotRecast.Detour
                 int vbase = 0;
                 for (int i = 0; i < option.polyCount; ++i)
                 {
-                    DtPolyDetail dtl = new DtPolyDetail();
-                    navDMeshes[i] = dtl;
                     int vb = option.detailMeshes[i * 4 + 0];
                     int ndv = option.detailMeshes[i * 4 + 1];
                     int nv = navPolys[i].vertCount;
-                    dtl.vertBase = vbase;
-                    dtl.vertCount = (ndv - nv);
-                    dtl.triBase = option.detailMeshes[i * 4 + 2];
-                    dtl.triCount = option.detailMeshes[i * 4 + 3];
+                    int vertBase = vbase;
+                    int vertCount = (ndv - nv);
+                    int triBase = option.detailMeshes[i * 4 + 2];
+                    int triCount = option.detailMeshes[i * 4 + 3];
+                    navDMeshes[i] = new DtPolyDetail(vertBase, triBase, vertCount, triCount);
                     // Copy vertices except the first 'nv' verts which are equal to
                     // nav poly verts.
                     if (ndv - nv != 0)
                     {
-                        Array.Copy(option.detailVerts, (vb + nv) * 3, navDVerts, vbase * 3, 3 * (ndv - nv));
+                        RcArrays.Copy(option.detailVerts, (vb + nv) * 3, navDVerts, vbase * 3, 3 * (ndv - nv));
                         vbase += ndv - nv;
                     }
                 }
 
                 // Store triangles.
-                Array.Copy(option.detailTris, 0, navDTris, 0, 4 * option.detailTriCount);
+                RcArrays.Copy(option.detailTris, 0, navDTris, 0, 4 * option.detailTriCount);
             }
             else
             {
@@ -572,13 +572,12 @@ namespace DotRecast.Detour
                 int tbase = 0;
                 for (int i = 0; i < option.polyCount; ++i)
                 {
-                    DtPolyDetail dtl = new DtPolyDetail();
-                    navDMeshes[i] = dtl;
                     int nv = navPolys[i].vertCount;
-                    dtl.vertBase = 0;
-                    dtl.vertCount = 0;
-                    dtl.triBase = tbase;
-                    dtl.triCount = (nv - 2);
+                    int vertBase = 0;
+                    int vertCount = 0;
+                    int triBase = tbase;
+                    int triCount = (nv - 2);
+                    navDMeshes[i] = new DtPolyDetail(vertBase, triBase, vertCount, triCount);
                     // Triangulate polygon (local indices).
                     for (int j = 2; j < nv; ++j)
                     {
@@ -617,7 +616,11 @@ namespace DotRecast.Detour
                     con.poly = (offMeshPolyBase + n);
                     // Copy connection end-points.
                     int endPts = i * 2 * 3;
-                    Array.Copy(option.offMeshConVerts, endPts, con.pos, 0, 6);
+                    for (int j = 0; j < 2; ++j)
+                    {
+                        con.pos[j] = RcVecUtils.Create(option.offMeshConVerts, endPts + (j * 3));
+                    }
+
                     con.rad = option.offMeshConRad[i];
                     con.flags = option.offMeshConDir[i] != 0 ? DtNavMesh.DT_OFFMESH_CON_BIDIR : 0;
                     con.side = offMeshConClass[i * 2 + 1];
