@@ -13,7 +13,8 @@ namespace UniRecast.Runtime
     public class UniRcCamera : MonoBehaviour
     {
         private float camSens = 0.25f;
-        private Vector3 lastMouse = new Vector3(255, 255, 255);
+
+        private Vector3 lastMouse;
 
         // input
         private int _modState;
@@ -26,58 +27,77 @@ namespace UniRecast.Runtime
         private float _moveDown;
         private float _moveAccel;
 
-
         private void Update()
         {
-            lastMouse = Input.mousePosition - lastMouse;
-            lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-            lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
-            transform.eulerAngles = lastMouse;
-            lastMouse = Input.mousePosition;
-
+            UpdateMouse(Time.deltaTime);
             UpdateKeyboard(Time.deltaTime);
             UpdateCamera(Time.deltaTime);
         }
 
+        private void UpdateMouse(float dt)
+        {
+
+            // left button
+            if (Input.GetMouseButton(0))
+            {
+                Debug.Log("0");
+            }
+            
+            // right button
+            if (Input.GetMouseButtonDown(1))
+            {
+                lastMouse = Input.mousePosition;
+            }
+            if (Input.GetMouseButton(1))
+            {
+                lastMouse = Input.mousePosition - lastMouse;
+                lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
+                lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
+                transform.eulerAngles = lastMouse;
+                lastMouse = Input.mousePosition;
+            }
+            
+            // wheel button
+            if (Input.GetMouseButton(2))
+            {
+                Debug.Log("2");
+            }
+
+        }
+
+        private float GetKeyValue(KeyCode key1, KeyCode key2)
+        {
+            return Input.GetKey(key1) || Input.GetKey(key2) ? 1.0f : -1.0f;
+        }
+
         private void UpdateKeyboard(float dt)
         {
-            var tempMoveFront = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) ? 1.0f : -1f;
-            var tempMoveLeft = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) ? 1.0f : -1f;
-            var tempMoveBack = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? 1.0f : -1f;
-            var tempMoveRight = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) ? 1.0f : -1f;
-            var tempMoveUp = Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.PageUp) ? 1.0f : -1f;
-            var tempMoveDown = Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.PageDown) ? 1.0f : -1f;
-            var tempMoveAccel = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? 1.0f : -1f;
-            var tempControl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            var tempMoveFront = GetKeyValue(KeyCode.W, KeyCode.UpArrow);
+            var tempMoveLeft = GetKeyValue(KeyCode.A, KeyCode.LeftArrow);
+            var tempMoveBack = GetKeyValue(KeyCode.S, KeyCode.DownArrow);
+            var tempMoveRight = GetKeyValue(KeyCode.D, KeyCode.RightArrow);
+            var tempMoveUp = GetKeyValue(KeyCode.Q, KeyCode.PageUp);
+            var tempMoveDown = GetKeyValue(KeyCode.E, KeyCode.PageDown);
+            var tempMoveAccel = GetKeyValue(KeyCode.LeftShift, KeyCode.RightShift);
+            var tempControl = GetKeyValue(KeyCode.LeftControl, KeyCode.RightControl);
 
             _modState = 0;
-            _modState |= tempControl ? (int)KeyModState.Control : (int)KeyModState.None;
+            _modState |= 0 < tempControl ? (int)KeyModState.Control : (int)KeyModState.None;
             _modState |= 0 < tempMoveAccel ? (int)KeyModState.Shift : (int)KeyModState.None;
 
             //Logger.Information($"{_modState}");
-            _moveFront = Mathf.Clamp(_moveFront + tempMoveFront * dt * 4.0f, 0, 1.0f);
-            _moveLeft = Mathf.Clamp(_moveLeft + tempMoveLeft * dt * 4.0f, 0, 1.0f);
-            _moveBack = Mathf.Clamp(_moveBack + tempMoveBack * dt * 4.0f, 0, 1.0f);
-            _moveRight = Mathf.Clamp(_moveRight + tempMoveRight * dt * 4.0f, 0, 1.0f);
-            _moveUp = Mathf.Clamp(_moveUp + tempMoveUp * dt * 4.0f, 0, 1.0f);
-            _moveDown = Mathf.Clamp(_moveDown + tempMoveDown * dt * 4.0f, 0, 1.0f);
-            _moveAccel = Mathf.Clamp(_moveAccel + tempMoveAccel * dt * 4.0f, 0, 1.0f);
+            _moveFront = Mathf.Clamp(_moveFront + tempMoveFront * dt * 4.0f, 0, 2.0f);
+            _moveLeft = Mathf.Clamp(_moveLeft + tempMoveLeft * dt * 4.0f, 0, 2.0f);
+            _moveBack = Mathf.Clamp(_moveBack + tempMoveBack * dt * 4.0f, 0, 2.0f);
+            _moveRight = Mathf.Clamp(_moveRight + tempMoveRight * dt * 4.0f, 0, 2.0f);
+            _moveUp = Mathf.Clamp(_moveUp + tempMoveUp * dt * 4.0f, 0, 2.0f);
+            _moveDown = Mathf.Clamp(_moveDown + tempMoveDown * dt * 4.0f, 0, 2.0f);
+            _moveAccel = Mathf.Clamp(_moveAccel + tempMoveAccel * dt * 4.0f, 0, 2.0f);
         }
 
         private void UpdateCamera(float dt)
         {
             float scrollZoom = 0;
-
-            float x = (_moveRight - _moveLeft) * 2.0f;
-            float y = (_moveFront - _moveBack) + scrollZoom * 4.0f;
-            scrollZoom = 0;
-
-            var forward = transform.forward;
-            var right = transform.right;
-
-            // forward.y = 0f;
-            // right.y = 0;
-            Vector3 moveDirection = (forward * y + right * x).normalized;
 
             float keySpeed = 22.0f;
             if (0 < _moveAccel)
@@ -85,7 +105,21 @@ namespace UniRecast.Runtime
                 keySpeed *= _moveAccel * 2.0f;
             }
 
-            transform.Translate(moveDirection * (keySpeed * dt), Space.World);
+            float x = (_moveRight - _moveLeft) * keySpeed * dt;
+            float y = (_moveUp - _moveDown) * keySpeed * dt;
+            float z = (_moveFront - _moveBack) * keySpeed * dt + scrollZoom * 2.0f;
+            scrollZoom = 0;
+
+            var forward = transform.forward;
+            var right = transform.right;
+
+            // forward.y = 0f;
+            // right.y = 0;
+            var translation = (forward * z + right * x);
+            translation.y += y;
+
+
+            transform.Translate(translation, Space.World);
         }
     }
 }
