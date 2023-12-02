@@ -2,7 +2,7 @@
 
 namespace UniRecast.Runtime.Toolsets
 {
-    public class UniRcToolset : MonoBehaviour
+    public class UniRcJumpLinkBuilderTool : MonoBehaviour
     {
         
     }

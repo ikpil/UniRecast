@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DotRecast.Recast.Toolset.Builder;
 using UnityEngine;
 
-namespace UniRecast
+namespace UniRecast.Runtime.Toolsets
 {
     public class UniRcConvexVolumeTool : MonoBehaviour
     {

@@ -2,7 +2,7 @@
 using DotRecast.Recast.Toolset.Tools;
 using UnityEngine;
 
-namespace UniRecast
+namespace UniRecast.Runtime.Toolsets
 {
     public class UniRcTestNavMeshTool : MonoBehaviour
     {

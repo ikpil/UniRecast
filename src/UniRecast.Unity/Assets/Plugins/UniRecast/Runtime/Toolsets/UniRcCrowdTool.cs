@@ -2,8 +2,7 @@
 
 namespace UniRecast.Runtime.Toolsets
 {
-    public class UniRcToolset : MonoBehaviour
+    public class UniRcCrowdTool : MonoBehaviour
     {
-        
     }
 }
