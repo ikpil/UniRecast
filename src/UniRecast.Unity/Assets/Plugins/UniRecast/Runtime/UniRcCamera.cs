@@ -12,9 +12,7 @@ namespace UniRecast.Runtime
 
     public class UniRcCamera : MonoBehaviour
     {
-        private float camSens = 0.25f;
-
-        private Vector3 lastMouse;
+        private Vector3 lastMousePosition;
 
         // input
         private int _modState;
@@ -36,33 +34,32 @@ namespace UniRecast.Runtime
 
         private void UpdateMouse(float dt)
         {
-
             // left button
             if (Input.GetMouseButton(0))
             {
-                Debug.Log("0");
             }
-            
+
             // right button
             if (Input.GetMouseButtonDown(1))
             {
-                lastMouse = Input.mousePosition;
+                lastMousePosition = Input.mousePosition;
             }
+
             if (Input.GetMouseButton(1))
             {
-                lastMouse = Input.mousePosition - lastMouse;
-                lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-                lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
-                transform.eulerAngles = lastMouse;
-                lastMouse = Input.mousePosition;
+                // delta
+                var tempMousePosition = Input.mousePosition;
+                var delta = tempMousePosition - lastMousePosition;
+                lastMousePosition = tempMousePosition;
+
+                transform.Rotate(Vector3.up, delta.x * 0.25f, Space.World);
+                transform.Rotate(Vector3.left, delta.y * 0.25f, Space.Self);
             }
-            
+
             // wheel button
             if (Input.GetMouseButton(2))
             {
-                Debug.Log("2");
             }
-
         }
 
         private float GetKeyValue(KeyCode key1, KeyCode key2)
