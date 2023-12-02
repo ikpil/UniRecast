@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace UniRecast.Runtime
@@ -24,6 +23,8 @@ namespace UniRecast.Runtime
         private float _moveUp;
         private float _moveDown;
         private float _moveAccel;
+
+        private float _scrollZoom;
 
         private void Update()
         {
@@ -60,6 +61,17 @@ namespace UniRecast.Runtime
             if (Input.GetMouseButton(2))
             {
             }
+
+            // wheel scroll
+            var scrollDelta = Input.mouseScrollDelta;
+            if (0 != scrollDelta.y)
+            {
+                _scrollZoom = Mathf.Clamp(scrollDelta.y, -1, 1);
+            }
+            else
+            {
+                _scrollZoom = 0;
+            }
         }
 
         private float GetKeyValue(KeyCode key1, KeyCode key2)
@@ -94,8 +106,6 @@ namespace UniRecast.Runtime
 
         private void UpdateCamera(float dt)
         {
-            float scrollZoom = 0;
-
             float keySpeed = 22.0f;
             if (0 < _moveAccel)
             {
@@ -104,8 +114,7 @@ namespace UniRecast.Runtime
 
             float x = (_moveRight - _moveLeft) * keySpeed * dt;
             float y = (_moveUp - _moveDown) * keySpeed * dt;
-            float z = (_moveFront - _moveBack) * keySpeed * dt + scrollZoom * 2.0f;
-            scrollZoom = 0;
+            float z = (_moveFront - _moveBack) * keySpeed * dt + _scrollZoom * 2.0f;
 
             var forward = transform.forward;
             var right = transform.right;
