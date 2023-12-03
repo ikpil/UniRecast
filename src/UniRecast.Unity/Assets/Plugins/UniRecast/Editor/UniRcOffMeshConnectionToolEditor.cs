@@ -1,4 +1,5 @@
-﻿using UniRecast.Runtime.Toolsets;
+﻿using Plugins.UniRecast.Extensions;
+using UniRecast.Runtime.Toolsets;
 using UnityEditor;
 
 namespace UniRecast.Editor
@@ -6,11 +7,19 @@ namespace UniRecast.Editor
     [CustomEditor(typeof(UniRcOffMeshConnectionTool))]
     public class UniRcOffMeshConnectionToolEditor : UniRcToolEditor
     {
-        protected override void Layout()
+        private SerializedProperty _bidir;
+
+        private void OnEnable()
         {
-            UniRcGui.Text(this.GetType().Name);
-            UniRcGui.Separator();
+            _bidir = serializedObject.FindPropertySafe(nameof(_bidir));
         }
 
+        protected override void Layout()
+        {
+            UniRcGui.RadioButton("One Way", _bidir, 0);
+            UniRcGui.RadioButton("Bidirectional", _bidir, 1);
+
+            serializedObject.ApplyModifiedProperties();
+        }
     }
 }
