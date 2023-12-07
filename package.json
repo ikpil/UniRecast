@@ -1,0 +1,19 @@
+{
+    "name": "com.defnotagamestudio.unirecast",
+    "displayName": "UniRecast",
+    "version": "0.0.1",
+    "unity": "2022.3",
+    "description": "ikpil's UniRecast made as a Unity library",
+    "keywords": [],
+    "category": "",
+    "author": {
+      "name": "Definitely Not a Game Studio",
+      "email": "daniloleemes@hotmail.com",
+      "url": "https://github.com/def-not-a-game-studio"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/def-not-a-game-studio/UniRecast.git",
+      "directory": "com.defnotagamestudio.unirecast"
+    }
+  }
