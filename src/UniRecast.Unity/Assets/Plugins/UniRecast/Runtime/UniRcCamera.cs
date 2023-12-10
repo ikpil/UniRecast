@@ -11,7 +11,8 @@ namespace UniRecast.Runtime
 
     public class UniRcCamera : MonoBehaviour
     {
-        private Vector3 lastMousePosition;
+        private Vector3 _lastMousePosition;
+        private GameObject _capsule;
 
         // input
         private int _modState;
@@ -36,29 +37,50 @@ namespace UniRecast.Runtime
         private void UpdateMouse(float dt)
         {
             // left button
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButtonDown(0))
             {
+                if (Camera.main != null)
+                {
+                    var tempPosition = Input.mousePosition;
+                    //Debug.Log($"mouse position - {tempPosition}");
+
+                    var ray = Camera.main.ScreenPointToRay(tempPosition);
+                    //Debug.Log($"ray - {ray}");
+
+                    var wasHit = RaycastForMeshFilter(ray, out var hit);
+                    if (wasHit)
+                    {
+                        //Debug.Log($"hit position - {hit.point}");
+                        if (null == _capsule)
+                        {
+                            _capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                        }
+
+                        var capsuleCollider = _capsule.GetComponent<CapsuleCollider>();
+                        _capsule.transform.position = hit.point + (_capsule.transform.up * capsuleCollider.height * 0.5f);
+                    }
+                }
             }
 
             // right button
             if (Input.GetMouseButtonDown(1))
             {
-                lastMousePosition = Input.mousePosition;
+                _lastMousePosition = Input.mousePosition;
             }
 
             if (Input.GetMouseButton(1))
             {
                 // delta
                 var tempMousePosition = Input.mousePosition;
-                var delta = tempMousePosition - lastMousePosition;
-                lastMousePosition = tempMousePosition;
+                var delta = tempMousePosition - _lastMousePosition;
+                _lastMousePosition = tempMousePosition;
 
                 transform.Rotate(Vector3.up, delta.x * 0.25f, Space.World);
                 transform.Rotate(Vector3.left, delta.y * 0.25f, Space.Self);
             }
 
             // wheel button
-            if (Input.GetMouseButton(2))
+            if (Input.GetMouseButtonDown(2))
             {
             }
 
@@ -72,6 +94,90 @@ namespace UniRecast.Runtime
             {
                 _scrollZoom = 0;
             }
+        }
+
+        private bool RaycastForMeshFilter(Ray ray, out RaycastHit hit)
+        {
+            hit = new RaycastHit();
+
+            var meshFilters = FindObjectsByType<MeshFilter>(FindObjectsSortMode.None);
+            if (meshFilters == null || 0 >= meshFilters.Length)
+            {
+                Debug.LogError("Mesh not found.");
+                return false;
+            }
+
+            float closest = float.MaxValue;
+
+            foreach (var meshFilter in meshFilters)
+            {
+                Mesh mesh = meshFilter.sharedMesh;
+                var vertices = mesh.vertices;
+                var triangles = mesh.triangles;
+
+                //Debug.Log($"{meshFilter.gameObject.name}-{triangles.Length}");
+
+                for (int i = 0; i < triangles.Length; i += 3)
+                {
+                    Vector3 v0 = vertices[triangles[i]];
+                    Vector3 v1 = vertices[triangles[i + 1]];
+                    Vector3 v2 = vertices[triangles[i + 2]];
+
+                    if (RayTriangleIntersection(ray, v0, v1, v2, out var tempHit))
+                    {
+                        float dist = Vector3.Distance(tempHit.point, ray.origin);
+                        if (dist < closest)
+                        {
+                            closest = dist;
+                            hit = tempHit;
+                        }
+                    }
+                }
+            }
+
+            if (float.MaxValue > closest)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool RayTriangleIntersection(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out RaycastHit hit)
+        {
+            hit = new RaycastHit();
+
+            Vector3 e1 = v1 - v0;
+            Vector3 e2 = v2 - v0;
+            Vector3 h = Vector3.Cross(ray.direction, e2);
+            float a = Vector3.Dot(e1, h);
+
+            if (a > -float.Epsilon && a < float.Epsilon)
+                return false;
+
+            float f = 1.0f / a;
+            Vector3 s = ray.origin - v0;
+            float u = f * Vector3.Dot(s, h);
+
+            if (u < 0.0f || u > 1.0f)
+                return false;
+
+            Vector3 q = Vector3.Cross(s, e1);
+            float v = f * Vector3.Dot(ray.direction, q);
+
+            if (v < 0.0f || u + v > 1.0f)
+                return false;
+
+            float t = f * Vector3.Dot(e2, q);
+            if (t > float.Epsilon)
+            {
+                hit.point = ray.origin + ray.direction * t;
+                hit.normal = Vector3.Cross(e1, e2).normalized;
+                hit.distance = t;
+                return true;
+            }
+
+            return false;
         }
 
         private float GetKeyValue(KeyCode key1, KeyCode key2)
