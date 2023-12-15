@@ -1,3 +1,5 @@
+using UniRecast.Core;
+
 namespace UniRecast.Editor
 {
     using DotRecast.Detour;

@@ -1,6 +1,6 @@
 ﻿namespace UniRecast.Editor
 {
-    using UniRecast.Extensions;
+    using UniRecast.Core;
     using UniRecast.Toolsets;
     using UnityEditor;
 

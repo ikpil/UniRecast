@@ -2,7 +2,7 @@
 {
     using DotRecast.Recast.Toolset.Builder;
     using UnityEditor;
-    using UniRecast.Extensions;
+    using UniRecast.Core;
     using UniRecast.Toolsets;
 
     [CanEditMultipleObjects]
