@@ -2,9 +2,9 @@
     "name": "DotRecast.Detour.TileCace",
     "rootNamespace": "",
     "references": [
-        "GUID:4882e85714e17684490b3954b2b8b1ba",
-        "GUID:34279ab1628c49bab3eb9bf531479df3",
-        "GUID:6fb652b73ea14bac9c5403796e30e114"
+        "DotRecast.Core",
+        "DotRecast.Recast",
+        "DotRecast.Detour"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
