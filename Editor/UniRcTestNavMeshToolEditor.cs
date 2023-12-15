@@ -4,7 +4,7 @@
     using DotRecast.Detour;
     using DotRecast.Recast.Toolset.Builder;
     using DotRecast.Recast.Toolset.Tools;
-    using UniRecast.Extensions;
+    using UniRecast.Core;
     using UniRecast.Toolsets;
     using UnityEditor;
 
