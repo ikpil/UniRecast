@@ -2,7 +2,7 @@
     "name": "DotRecast.Detour",
     "rootNamespace": "",
     "references": [
-        "GUID:4882e85714e17684490b3954b2b8b1ba"
+        "DotRecast.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
