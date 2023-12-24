@@ -1,6 +1,6 @@
 {
     "name": "UniRecast.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "UniRecast.Editor",
     "references": [
         "DotRecast.Core",
         "DotRecast.Recast",
@@ -13,7 +13,9 @@
         "UniRecast.Core",
         "UniRecast.Toolsets"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
