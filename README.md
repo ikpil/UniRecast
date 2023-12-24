@@ -6,6 +6,12 @@
 
 # this is Alpha
 
+# How to use
+You can add https://github.com/ikpil/UniRecast.git to Package Manager
+
+![package manager](https://github.com/ikpil/DotRecast/assets/313821/4f1721a0-fc0e-4c50-b616-d4ea51315103)
+![install url](https://github.com/ikpil/DotRecast/assets/313821/9b35c360-db07-4911-8ac2-34d3e8dbfac1)
+
 # UniRecast
 
 - UniRecast is a powerful navigation library built upon [DotRecast](https://github.com/ikpil/DotRecast), leveraging recast detour for advanced pathfinding capabilities.
