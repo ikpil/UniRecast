@@ -6,17 +6,21 @@
 
 # this is Alpha
 
+# UniRecast
+
+- UniRecast is a powerful navigation library built upon [DotRecast](https://github.com/ikpil/DotRecast), leveraging recast detour for advanced pathfinding capabilities.
+- Designed specifically for Unity3D environments, UniRecast aims to fulfill the navigation needs within the Unity framework.
+- UniRecast's foundation on DotRecast enables easy integration with servers and ensures efficient performance, catering to seamless server-side interactions.
+
 # How to use
 You can add https://github.com/ikpil/UniRecast.git to Package Manager
 
 ![package manager](https://github.com/ikpil/DotRecast/assets/313821/4f1721a0-fc0e-4c50-b616-d4ea51315103)
 ![install url](https://github.com/ikpil/DotRecast/assets/313821/9b35c360-db07-4911-8ac2-34d3e8dbfac1)
 
-# UniRecast
+# Demo
+![UniRecastDemo](https://github.com/ikpil/DotRecast/assets/313821/5f036ab3-90fd-432c-8df5-afa9fcdbf86e)
 
-- UniRecast is a powerful navigation library built upon [DotRecast](https://github.com/ikpil/DotRecast), leveraging recast detour for advanced pathfinding capabilities.
-- Designed specifically for Unity3D environments, UniRecast aims to fulfill the navigation needs within the Unity framework.
-- UniRecast's foundation on DotRecast enables easy integration with servers and ensures efficient performance, catering to seamless server-side interactions.
 
 # License
 UniRecast is licensed under MIT license, see [LICENSE.md](LICENSE.md) for more information
