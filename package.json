@@ -1,22 +1,25 @@
 {
-    "name": "com.defnotagamestudio.unirecast",
-    "displayName": "UniRecast",
-    "version": "0.0.1",
-    "unity": "2022.3",
-    "description": "ikpil's UniRecast made as a Unity library",
-    "keywords": [],
-    "category": "",
-    "author": {
-      "name": "Definitely Not a Game Studio",
-      "email": "daniloleemes@hotmail.com",
-      "url": "https://github.com/def-not-a-game-studio"
-    },
-    "dependencies": {
-      "com.unity.nuget.newtonsoft-json": "3.2.1"
-    },
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/def-not-a-game-studio/UniRecast.git",
-      "directory": "com.defnotagamestudio.unirecast"
-    }
+  "name": "com.ikpil.unirecast",
+  "displayName": "UniRecast",
+  "version": "0.0.5",
+  "unity": "2018.4",
+  "description": "navigation mesh toolset for Unity3D using DotRecast",
+  "license": "MIT",
+  "keywords": [
+    "recast",
+    "detour",
+    "dotrecast",
+    "navigation",
+    "navmesh",
+    "pathfinding",
+    "gamedev",
+    ".net"
+  ],
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "repository": {
+    "url": "https://github.com/ikpil/UniRecast.git",
+    "type": "git"
   }
+}
