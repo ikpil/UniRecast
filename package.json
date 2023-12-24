@@ -20,6 +20,7 @@
   },
   "repository": {
     "url": "https://github.com/ikpil/UniRecast.git",
-    "type": "git"
+    "type": "git",
+    "revision": "2575f53a08361fd5ab1e76359eac8544509c2e2c"
   }
 }
