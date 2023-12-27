@@ -1,13 +1,12 @@
 using UniRecast.Core;
+using DotRecast.Detour;
+using DotRecast.Recast.Toolset;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UniRecast.Editor
 {
-    using DotRecast.Detour;
-    using DotRecast.Recast.Toolset;
-    using UnityEditor;
-    using UnityEngine;
-    using UnityEngine.Rendering;
-
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcNavMeshSurface))]
     public class UniRcNavMeshSurfaceEditor : UniRcToolEditor
@@ -232,9 +231,9 @@ namespace UniRecast.Editor
                 EditorGUI.ObjectField(rectLabel, _navMeshData, GUIContent.none);
                 EditorGUI.EndProperty();
             }
-            
+
             UniRcGui.NewLine();
-            
+
             serializedObject.ApplyModifiedProperties();
 
             using (new EditorGUI.DisabledScope(Application.isPlaying))

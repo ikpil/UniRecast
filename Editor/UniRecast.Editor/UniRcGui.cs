@@ -1,9 +1,10 @@
-﻿namespace UniRecast.Editor
-{
-    using System;
-    using UnityEditor;
-    using UnityEngine;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
 
+namespace UniRecast.Editor
+
+{
     public static class UniRcGui
     {
         public static void DrawAgentDiagram(Rect rect, float agentRadius, float agentHeight, float agentClimb, float agentSlope)

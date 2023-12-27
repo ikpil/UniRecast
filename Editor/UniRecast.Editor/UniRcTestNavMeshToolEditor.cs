@@ -1,13 +1,13 @@
-﻿namespace UniRecast.Editor
-{
-    using System.Linq;
-    using DotRecast.Detour;
-    using DotRecast.Recast.Toolset.Builder;
-    using DotRecast.Recast.Toolset.Tools;
-    using UniRecast.Core;
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using System.Linq;
+using DotRecast.Detour;
+using DotRecast.Recast.Toolset.Builder;
+using DotRecast.Recast.Toolset.Tools;
+using UniRecast.Core;
+using UniRecast.Toolsets;
+using UnityEditor;
 
+namespace UniRecast.Editor
+{
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcTestNavMeshTool))]
     public class UniRcTestNavMeshToolEditor : UniRcToolEditor

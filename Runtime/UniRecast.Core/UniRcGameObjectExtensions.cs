@@ -1,8 +1,8 @@
-﻿namespace UniRecast.Core
-{
-    using System.Collections.Generic;
-    using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
+namespace UniRecast.Core
+{
     public static class UniRcGameObjectExtensions
     {
         public static List<GameObject> ToHierarchyList(this GameObject root)

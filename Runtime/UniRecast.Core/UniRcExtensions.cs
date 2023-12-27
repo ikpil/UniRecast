@@ -1,14 +1,14 @@
-﻿namespace UniRecast.Core
-{
-    using System.Collections.Generic;
-    using System.IO;
-    using DotRecast.Core;
-    using DotRecast.Core.Numerics;
-    using DotRecast.Detour;
-    using DotRecast.Detour.Io;
-    using UnityEngine;
-    using UnityEngine.Rendering;
+﻿using System.Collections.Generic;
+using System.IO;
+using DotRecast.Core;
+using DotRecast.Core.Numerics;
+using DotRecast.Detour;
+using DotRecast.Detour.Io;
+using UnityEngine;
+using UnityEngine.Rendering;
 
+namespace UniRecast.Core
+{
     // https://github.com/highfidelity/unity-to-hifi-exporter/blob/master/Assets/UnityToHiFiExporter/Editor/TerrainObjExporter.cs
     public static class UniRcExtensions
     {

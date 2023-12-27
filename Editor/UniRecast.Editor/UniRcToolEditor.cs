@@ -1,9 +1,9 @@
-﻿namespace UniRecast.Editor
-{
-    using UnityEditor;
-    using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-    public class UniRcToolEditor : Editor
+namespace UniRecast.Editor
+{
+    public class UniRcToolEditor : UnityEditor.Editor
     {
         private void ProcessMouse()
         {
@@ -12,7 +12,7 @@
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
             {
                 Debug.Log("step 1");
-                
+
                 // 씬뷰에서의 마우스 위치를 가져옴
                 Vector2 mousePosition = Event.current.mousePosition;
 
@@ -34,7 +34,7 @@
         {
             ProcessMouse();
         }
-        
+
         // tool 
         public override void OnInspectorGUI()
         {
@@ -44,8 +44,6 @@
 
         protected virtual void Layout()
         {
-            
         }
-        
     }
 }

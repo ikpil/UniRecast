@@ -1,9 +1,9 @@
-﻿namespace UniRecast.Core
-{
-    using System;
-    using System.Linq;
-    using UnityEngine;
+﻿using System;
+using System.Linq;
+using UnityEngine;
 
+namespace UniRecast.Core
+{
     public class UniRcNavMeshSurfaceTarget
     {
         private readonly string _name;

@@ -1,8 +1,8 @@
-﻿namespace UniRecast.Editor
-{
-    using UnityEditor;
-    using UniRecast.Toolsets;
+﻿using UnityEditor;
+using UniRecast.Toolsets;
 
+namespace UniRecast.Editor
+{
     [CustomEditor(typeof(UniRcCrowdAgentProfilingTool))]
     public class UniRcCrowdAgentProfilingToolEditor : UniRcToolEditor
     {

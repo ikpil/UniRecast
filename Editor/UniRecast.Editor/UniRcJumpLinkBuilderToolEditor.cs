@@ -1,8 +1,8 @@
-﻿namespace UniRecast.Editor
-{
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using UniRecast.Toolsets;
+using UnityEditor;
 
+namespace UniRecast.Editor
+{
     [CustomEditor(typeof(UniRcJumpLinkBuilderTool))]
     public class UniRcJumpLinkBuilderToolEditor : UniRcToolEditor
     {
@@ -11,6 +11,5 @@
             UniRcGui.Text(this.GetType().Name);
             UniRcGui.Separator();
         }
- 
     }
 }

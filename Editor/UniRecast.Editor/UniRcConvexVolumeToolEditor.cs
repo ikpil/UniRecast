@@ -1,10 +1,10 @@
-﻿namespace UniRecast.Editor
-{
-    using DotRecast.Recast.Toolset.Builder;
-    using UnityEditor;
-    using UniRecast.Core;
-    using UniRecast.Toolsets;
+﻿using DotRecast.Recast.Toolset.Builder;
+using UnityEditor;
+using UniRecast.Core;
+using UniRecast.Toolsets;
 
+namespace UniRecast.Editor
+{
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcConvexVolumeTool))]
     public class UniRcConvexVolumeToolEditor : UniRcToolEditor
@@ -20,7 +20,7 @@
             _boxHeight = serializedObject.FindPropertySafe(nameof(_boxHeight));
             _boxDescent = serializedObject.FindPropertySafe(nameof(_boxDescent));
             _polyOffset = serializedObject.FindPropertySafe(nameof(_polyOffset));
-            
+
             _areaTypeValue = serializedObject.FindPropertySafe(nameof(_areaTypeValue));
         }
 
@@ -64,7 +64,7 @@
                 //     geom.ClearConvexVolumes();
                 // }
             }
-            
+
             serializedObject.ApplyModifiedProperties();
         }
     }

@@ -1,8 +1,8 @@
-﻿namespace UniRecast.Editor
-{
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using UniRecast.Toolsets;
+using UnityEditor;
 
+namespace UniRecast.Editor
+{
     [CustomEditor(typeof(UniRcDynamicUpdateTool))]
     public class UniRcDynamicUpdateToolEditor : UniRcToolEditor
     {

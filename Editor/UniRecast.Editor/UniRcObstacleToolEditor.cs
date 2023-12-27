@@ -1,8 +1,8 @@
-﻿namespace UniRecast.Editor
-{
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using UnityEditor;
+using UniRecast.Toolsets;
 
+namespace UniRecast.Editor
+{
     [CustomEditor(typeof(UniRcObstacleTool))]
     public class UniRcObstacleToolEditor : UniRcToolEditor
     {

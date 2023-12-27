@@ -1,9 +1,9 @@
-﻿namespace UniRecast.Editor
-{
-    using UniRecast.Core;
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using UniRecast.Core;
+using UniRecast.Toolsets;
+using UnityEditor;
 
+namespace UniRecast.Editor
+{
     [CustomEditor(typeof(UniRcOffMeshConnectionTool))]
     public class UniRcOffMeshConnectionToolEditor : UniRcToolEditor
     {

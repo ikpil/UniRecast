@@ -1,16 +1,16 @@
-﻿namespace UniRecast.Core
-{
-    using System;
-    using System.IO;
-    using System.Text;
-    using DotRecast.Core;
-    using DotRecast.Core.Numerics;
-    using DotRecast.Detour;
-    using DotRecast.Recast.Toolset;
-    using DotRecast.Recast.Toolset.Builder;
-    using DotRecast.Recast.Toolset.Geom;
-    using UnityEngine;
+﻿using System;
+using System.IO;
+using System.Text;
+using DotRecast.Core;
+using DotRecast.Core.Numerics;
+using DotRecast.Detour;
+using DotRecast.Recast.Toolset;
+using DotRecast.Recast.Toolset.Builder;
+using DotRecast.Recast.Toolset.Geom;
+using UnityEngine;
 
+namespace UniRecast.Core
+{
     public readonly struct UniRcMesh
     {
         public readonly string Name;

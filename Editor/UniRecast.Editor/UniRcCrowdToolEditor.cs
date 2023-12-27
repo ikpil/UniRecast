@@ -1,10 +1,10 @@
-﻿namespace UniRecast.Editor
-{
-    using DotRecast.Recast.Toolset.Tools;
-    using UniRecast.Core;
-    using UniRecast.Toolsets;
-    using UnityEditor;
+﻿using DotRecast.Recast.Toolset.Tools;
+using UnityEditor;
+using UniRecast.Core;
+using UniRecast.Toolsets;
 
+namespace UniRecast.Editor
+{
     [CanEditMultipleObjects]
     [CustomEditor(typeof(UniRcCrowdTool))]
     public class UniRcCrowdToolEditor : UniRcToolEditor

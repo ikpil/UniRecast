@@ -1,7 +1,7 @@
+using UnityEngine;
+
 namespace UniRecast.Core
 {
-    using UnityEngine;
-
     public static class KeyModState
     {
         public const int None = 0;
