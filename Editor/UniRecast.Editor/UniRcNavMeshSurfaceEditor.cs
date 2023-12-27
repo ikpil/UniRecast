@@ -420,15 +420,15 @@ namespace UniRecast.Editor
         }
 
 
-        [MenuItem("GameObject/UniRecast/Unity Recast NavMesh Surface", false, 2000)]
+        [MenuItem("GameObject/UniRecast/UniRc NavMesh Surface", false, 2000)]
         public static void CreateNavMeshSurface(MenuCommand menuCommand)
         {
             var parent = menuCommand.context as GameObject;
-            // var go = NavMeshComponentsGUIUtility.CreateAndSelectGameObject("NavMesh Surface", parent);
-            // go.AddComponent<NavMeshSurface>();
-            // var view = SceneView.lastActiveSceneView;
-            // if (view != null)
-            //     view.MoveToView(go.transform);
+            var go = UniRcGuiUtility.CreateAndSelectGameObject("UniRc NavMesh Surface", parent);
+            go.AddComponent<UniRcNavMeshSurface>();
+            var view = SceneView.lastActiveSceneView;
+            if (view != null)
+                view.MoveToView(go.transform);
         }
     }
 }
