@@ -1,16 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
+using DotRecast.Detour;
+using DotRecast.Recast.Toolset;
+using UnityEngine;
+
 namespace UniRecast.Core
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using DotRecast.Detour;
-    using DotRecast.Recast.Toolset;
-    using UnityEngine;
-
     public class UniRcNavMeshSurface : MonoBehaviour
     {
-        [SerializeField]
-        public DtNavMesh NavMesh;
-
         [SerializeField]
         private float _cellSize = 0.3f;
 
@@ -74,6 +71,8 @@ namespace UniRecast.Core
         [SerializeField]
         private int _tileSize = 32;
 
+        [SerializeField]
+        private UniRcNavMeshData _navMeshData = new();
 
         private RcNavMeshBuildSettings ToBuildSettings()
         {
@@ -143,11 +142,11 @@ namespace UniRecast.Core
             mesh.SaveFile();
 
             var navMesh = mesh.Build(setting);
-            NavMesh = navMesh;
+            _navMeshData.NavMesh = navMesh;
 
             navMesh.SaveNavMeshFile(combinedTarget.GetName());
 
-            Debug.Log($"{null != NavMesh}");
+            Debug.Log($"{null != _navMeshData}");
         }
 
         public List<UniRcNavMeshSurfaceTarget> GetNavMeshSurfaceTargets(IList<GameObject> gameObjects)
@@ -175,6 +174,21 @@ namespace UniRecast.Core
             targets.AddRange(meshFilterTargets);
 
             return targets;
+        }
+
+        public void Clear()
+        {
+            _navMeshData.NavMesh = null;
+        }
+
+        public bool HasNavMeshData()
+        {
+            return null != _navMeshData.NavMesh;
+        }
+
+        public DtNavMesh GetNavMeshData()
+        {
+            return _navMeshData.NavMesh;
         }
     }
 }

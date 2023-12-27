@@ -12,8 +12,6 @@ namespace UniRecast.Editor
     [CustomEditor(typeof(UniRcNavMeshSurface))]
     public class UniRcNavMeshSurfaceEditor : UniRcToolEditor
     {
-        SerializedProperty NavMesh;
-
         // Rasterization
         private SerializedProperty _cellSize;
         private SerializedProperty _cellHeight;
@@ -47,6 +45,8 @@ namespace UniRecast.Editor
         // Tiles
         private SerializedProperty _tileSize;
 
+        private SerializedProperty _navMeshData;
+
         private static readonly Color s_HandleColor = new Color(127f, 214f, 244f, 100f) / 255;
 
         //private static readonly Color s_HandleColorSelected = new Color(127f, 63.0f, 244f, 210f) / 255;
@@ -59,8 +59,6 @@ namespace UniRecast.Editor
 
         private void OnEnable()
         {
-            NavMesh = serializedObject.FindProperty(nameof(UniRcNavMeshSurface.NavMesh));
-
             // Rasterization
             _cellSize = serializedObject.FindProperty(nameof(_cellSize));
             _cellHeight = serializedObject.FindProperty(nameof(_cellHeight));
@@ -93,6 +91,9 @@ namespace UniRecast.Editor
 
             // Tiles
             _tileSize = serializedObject.FindProperty(nameof(_tileSize));
+
+            // Data
+            _navMeshData = serializedObject.FindProperty(nameof(_navMeshData));
         }
 
         private void Clear()
@@ -104,7 +105,7 @@ namespace UniRecast.Editor
                 return;
             }
 
-            surface.NavMesh = null;
+            surface.Clear();
 
             // 기본값 초기화
             var bs = new RcNavMeshBuildSettings();
@@ -219,6 +220,21 @@ namespace UniRecast.Editor
             // UniRcEditorHelpers.Text($"Max Polys {maxPolys}");
             //}
 
+            var nmdRect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
+
+            EditorGUI.BeginProperty(nmdRect, GUIContent.none, _navMeshData);
+            var rectLabel = EditorGUI.PrefixLabel(nmdRect, GUIUtility.GetControlID(FocusType.Passive), new GUIContent(_navMeshData.displayName));
+            EditorGUI.EndProperty();
+
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUI.BeginProperty(nmdRect, GUIContent.none, _navMeshData);
+                EditorGUI.ObjectField(rectLabel, _navMeshData, GUIContent.none);
+                EditorGUI.EndProperty();
+            }
+            
+            UniRcGui.NewLine();
+            
             serializedObject.ApplyModifiedProperties();
 
             using (new EditorGUI.DisabledScope(Application.isPlaying))
@@ -333,7 +349,7 @@ namespace UniRecast.Editor
             Gizmos.matrix = localToWorld;
 
 
-            if (null == navSurface.NavMesh)
+            if (!navSurface.HasNavMeshData())
             {
                 return;
             }
@@ -342,10 +358,10 @@ namespace UniRecast.Editor
             // Handles의 Z 테스트 방식 설정
 
             // 폴리 그리기
-            int count = navSurface.NavMesh.GetMaxTiles();
+            int count = navSurface.GetNavMeshData().GetMaxTiles();
             for (int i = 0; i < count; ++i)
             {
-                var tile = navSurface.NavMesh.GetTile(i);
+                var tile = navSurface.GetNavMeshData().GetTile(i);
                 if (null == tile.data)
                     continue;
 
@@ -373,7 +389,7 @@ namespace UniRecast.Editor
             // 검은색 큐브 그리기
             for (int i = 0; i < count; ++i)
             {
-                var tile = navSurface.NavMesh.GetTile(i);
+                var tile = navSurface.GetNavMeshData().GetTile(i);
                 if (null == tile.data)
                     continue;
 
