@@ -97,6 +97,15 @@ namespace UniRecast.Editor
 
         private void Clear()
         {
+            var surface = target as UniRcNavMeshSurface;
+            if (null == surface)
+            {
+                Debug.LogError($"not found UniRc NavMesh Surface");
+                return;
+            }
+
+            surface.NavMesh = null;
+
             // 기본값 초기화
             var bs = new RcNavMeshBuildSettings();
 
@@ -139,7 +148,7 @@ namespace UniRecast.Editor
             var surface = target as UniRcNavMeshSurface;
             if (null == surface)
             {
-                Debug.LogError($"not found UniRcNavMeshSurface");
+                Debug.LogError($"not found UniRc NavMesh Surface");
                 return;
             }
 
