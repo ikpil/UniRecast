@@ -1,8 +1,9 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![Repo Size](https://img.shields.io/github/repo-size/ikpil/UniRecast.svg?colorB=lightgray)
+![GitHub repo size](https://img.shields.io/github/repo-size/ikpil/UniRecast)
 ![Languages](https://img.shields.io/github/languages/top/ikpil/UniRecast)
 [![CodeQL](https://github.com/ikpil/UniRecast/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/ikpil/UniRecast/actions/workflows/github-code-scanning/codeql)
 [![Visitors](https://api.visitorbadge.io/api/daily?path=ikpil%2FUniRecast&countColor=%23263759&style=flat-square)](https://visitorbadge.io/status?path=ikpil%2FUniRecast)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/ikpil?style=flat-square&logo=GitHub-Sponsors&link=https%3A%2F%2Fgithub.com%2Fsponsors%2Fikpil)](https://github.com/sponsors/ikpil)
 
 # this is Alpha
 
