@@ -1,7 +1,7 @@
 {
   "name": "com.ikpil.unirecast",
   "displayName": "UniRecast",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "unity": "2019.3",
   "description": "navigation mesh toolset for Unity3D using DotRecast",
   "license": "MIT",
@@ -21,8 +21,7 @@
   },
   "repository": {
     "url": "https://github.com/ikpil/UniRecast.git",
-    "type": "git",
-    "revision": "20bf43272e9a453cb080f2864185ee0396bf36e3"
+    "type": "git"    
   },
   "samples": [
     {
