@@ -16,11 +16,12 @@
 # How to use
 You can add https://github.com/ikpil/UniRecast.git to Package Manager
 
-![package manager](https://github.com/ikpil/DotRecast/assets/313821/4f1721a0-fc0e-4c50-b616-d4ea51315103)
-![install url](https://github.com/ikpil/DotRecast/assets/313821/9b35c360-db07-4911-8ac2-34d3e8dbfac1)
+![package manager](https://user-images.githubusercontent.com/313821/292654879-4f1721a0-fc0e-4c50-b616-d4ea51315103.png)
+
+![install url](https://user-images.githubusercontent.com/313821/292654898-9b35c360-db07-4911-8ac2-34d3e8dbfac1.png)
 
 # Demo
-![UniRecastDemo](https://github.com/ikpil/DotRecast/assets/313821/5f036ab3-90fd-432c-8df5-afa9fcdbf86e)
+![UniRecastDemo](https://user-images.githubusercontent.com/313821/292662263-5f036ab3-90fd-432c-8df5-afa9fcdbf86e.png)
 
 
 # License
