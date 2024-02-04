@@ -793,7 +793,8 @@ namespace DotRecast.Detour
             DtNode lastBestNode = startNode;
             float lastBestNodeCost = startNode.total;
 
-
+            DtRaycastHit rayHit = new DtRaycastHit();
+            rayHit.path = new List<long>();
             while (!m_openList.IsEmpty())
             {
                 // Remove node from open list and put it in closed list.
@@ -893,13 +894,13 @@ namespace DotRecast.Detour
                     if (tryLOS)
                     {
                         var rayStatus = Raycast(parentRef, parentNode.pos, neighbourPos, filter,
-                            DtRaycastOptions.DT_RAYCAST_USE_COSTS, grandpaRef, out var rayHit);
+                            DtRaycastOptions.DT_RAYCAST_USE_COSTS, ref rayHit, grandpaRef);
                         if (rayStatus.Succeeded())
                         {
                             foundShortCut = rayHit.t >= 1.0f;
                             if (foundShortCut)
                             {
-                                shortcut = rayHit.path;
+                                shortcut = new List<long>(rayHit.path);
                                 // shortcut found using raycast. Using shorter cost
                                 // instead
                                 cost = parentNode.cost + rayHit.pathCost;
@@ -1089,6 +1090,9 @@ namespace DotRecast.Detour
                 return DtStatus.DT_FAILURE;
             }
 
+            var rayHit = new DtRaycastHit();
+            rayHit.path = new List<long>();
+
             int iter = 0;
             while (iter < maxIter && !m_openList.IsEmpty())
             {
@@ -1214,13 +1218,13 @@ namespace DotRecast.Detour
                     if (tryLOS)
                     {
                         status = Raycast(parentRef, parentNode.pos, neighbourPos, m_query.filter,
-                            DtRaycastOptions.DT_RAYCAST_USE_COSTS, grandpaRef, out var rayHit);
+                            DtRaycastOptions.DT_RAYCAST_USE_COSTS, ref rayHit, grandpaRef);
                         if (status.Succeeded())
                         {
                             foundShortCut = rayHit.t >= 1.0f;
                             if (foundShortCut)
                             {
-                                shortcut = rayHit.path;
+                                shortcut = new List<long>(rayHit.path);
                                 // shortcut found using raycast. Using shorter cost
                                 // instead
                                 cost = parentNode.cost + rayHit.pathCost;
@@ -2113,6 +2117,59 @@ namespace DotRecast.Detour
             return DtStatus.DT_SUCCESS;
         }
 
+        /// @par
+        ///
+        /// This method is meant to be used for quick, short distance checks.
+        ///
+        /// If the path array is too small to hold the result, it will be filled as 
+        /// far as possible from the start postion toward the end position.
+        ///
+        /// <b>Using the Hit Parameter (t)</b>
+        /// 
+        /// If the hit parameter is a very high value (FLT_MAX), then the ray has hit 
+        /// the end position. In this case the path represents a valid corridor to the 
+        /// end position and the value of @p hitNormal is undefined.
+        ///
+        /// If the hit parameter is zero, then the start position is on the wall that 
+        /// was hit and the value of @p hitNormal is undefined.
+        ///
+        /// If 0 < t < 1.0 then the following applies:
+        ///
+        /// @code
+        /// distanceToHitBorder = distanceToEndPosition * t
+        /// hitPoint = startPos + (endPos - startPos) * t
+        /// @endcode
+        ///
+        /// <b>Use Case Restriction</b>
+        ///
+        /// The raycast ignores the y-value of the end position. (2D check.) This 
+        /// places significant limits on how it can be used. For example:
+        ///
+        /// Consider a scene where there is a main floor with a second floor balcony 
+        /// that hangs over the main floor. So the first floor mesh extends below the 
+        /// balcony mesh. The start position is somewhere on the first floor. The end 
+        /// position is on the balcony.
+        ///
+        /// The raycast will search toward the end position along the first floor mesh. 
+        /// If it reaches the end position's xz-coordinates it will indicate FLT_MAX
+        /// (no wall hit), meaning it reached the end position. This is one example of why
+        /// this method is meant for short distance checks.
+        ///
+        public DtStatus Raycast(long startRef, RcVec3f startPos, RcVec3f endPos,
+            IDtQueryFilter filter,
+            out float t, out RcVec3f hitNormal, ref List<long> path)
+        {
+            DtRaycastHit hit = new DtRaycastHit();
+            hit.path = path;
+
+            DtStatus status = Raycast(startRef, startPos, endPos, filter, 0, ref hit, 0);
+
+            t = hit.t;
+            hitNormal = hit.hitNormal;
+            path = hit.path;
+
+            return status;
+        }
 
         /// @par
         ///
@@ -2166,11 +2223,10 @@ namespace DotRecast.Detour
         /// @param[out] pathCount The number of visited polygons. [opt]
         /// @param[in] maxPath The maximum number of polygons the @p path array can hold.
         /// @returns The status flags for the query.
-        public DtStatus Raycast(long startRef, RcVec3f startPos, RcVec3f endPos, IDtQueryFilter filter, int options,
-            long prevRef, out DtRaycastHit hit)
+        public DtStatus Raycast(long startRef, RcVec3f startPos, RcVec3f endPos,
+            IDtQueryFilter filter, int options,
+            ref DtRaycastHit hit, long prevRef)
         {
-            hit = null;
-
             // Validate input
             if (!m_nav.IsValidPolyRef(startRef) || !startPos.IsFinite() || !endPos.IsFinite()
                 || null == filter || (prevRef != 0 && !m_nav.IsValidPolyRef(prevRef)))
@@ -2178,7 +2234,9 @@ namespace DotRecast.Detour
                 return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
             }
 
-            hit = new DtRaycastHit();
+            hit.t = 0;
+            hit.path.Clear();
+            hit.pathCost = 0;
 
             RcVec3f[] verts = new RcVec3f[m_nav.GetMaxVertsPerPoly() + 1];
 
@@ -2186,7 +2244,8 @@ namespace DotRecast.Detour
             RcVec3f lastPos = RcVec3f.Zero;
 
             curPos = startPos;
-            var dir = RcVec3f.Subtract(endPos, startPos);
+            RcVec3f dir = RcVec3f.Subtract(endPos, startPos);
+            hit.hitNormal = RcVec3f.Zero;
 
             DtMeshTile prevTile, tile, nextTile;
             DtPoly prevPoly, poly, nextPoly;
@@ -3341,15 +3400,18 @@ namespace DotRecast.Detour
             return m_nav;
         }
 
-        /**
-     * Gets a path from the explored nodes in the previous search.
-     *
-     * @param endRef
-     *            The reference id of the end polygon.
-     * @returns An ordered list of polygon references representing the path. (Start to end.)
-     * @remarks The result of this function depends on the state of the query object. For that reason it should only be
-     *          used immediately after one of the two Dijkstra searches, findPolysAroundCircle or findPolysAroundShape.
-     */
+        /// Gets a path from the explored nodes in the previous search.
+        ///  @param[in]		endRef		The reference id of the end polygon.
+        ///  @param[out]	path		An ordered list of polygon references representing the path. (Start to end.)
+        ///  							[(polyRef) * @p pathCount]
+        ///  @param[out]	pathCount	The number of polygons returned in the @p path array.
+        ///  @param[in]		maxPath		The maximum number of polygons the @p path array can hold. [Limit: >= 0]
+        ///  @returns		The status flags. Returns DT_FAILURE | DT_INVALID_PARAM if any parameter is wrong, or if
+        ///  				@p endRef was not explored in the previous search. Returns DT_SUCCESS | DT_BUFFER_TOO_SMALL
+        ///  				if @p path cannot contain the entire path. In this case it is filled to capacity with a partial path.
+        ///  				Otherwise returns DT_SUCCESS.
+        ///  @remarks		The result of this function depends on the state of the query object. For that reason it should only
+        ///  				be used immediately after one of the two Dijkstra searches, findPolysAroundCircle or findPolysAroundShape.
         public DtStatus GetPathFromDijkstraSearch(long endRef, ref List<long> path)
         {
             if (!m_nav.IsValidPolyRef(endRef) || null == path)
@@ -3359,18 +3421,14 @@ namespace DotRecast.Detour
 
             path.Clear();
 
-            List<DtNode> nodes = m_nodePool.FindNodes(endRef);
-            if (nodes.Count != 1)
+            if (m_nodePool.FindNodes(endRef, out var endNodes) != 1
+                || (endNodes[0].flags & DtNodeFlags.DT_NODE_CLOSED) == 0)
             {
                 return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
             }
 
-            DtNode endNode = nodes[0];
-            if ((endNode.flags & DtNodeFlags.DT_NODE_CLOSED) == 0)
-            {
-                return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
-            }
-
+            DtNode endNode = endNodes[0];
+            
             return GetPathToNode(endNode, ref path);
         }
 
@@ -3403,10 +3461,11 @@ namespace DotRecast.Detour
             return DtStatus.DT_SUCCESS;
         }
 
-        /**
-     * The closed list is the list of polygons that were fully evaluated during the last navigation graph search. (A* or
-     * Dijkstra)
-     */
+        /// @par
+        ///
+        /// The closed list is the list of polygons that were fully evaluated during 
+        /// the last navigation graph search. (A* or Dijkstra)
+        /// 
         public bool IsInClosedList(long refs)
         {
             if (m_nodePool == null)
@@ -3414,9 +3473,10 @@ namespace DotRecast.Detour
                 return false;
             }
 
-            foreach (DtNode n in m_nodePool.FindNodes(refs))
+            int n = m_nodePool.FindNodes(refs, out var nodes);
+            for (int i = 0; i < n; ++i)
             {
-                if ((n.flags & DtNodeFlags.DT_NODE_CLOSED) != 0)
+                if ((nodes[i].flags & DtNodeFlags.DT_NODE_CLOSED) != 0)
                 {
                     return true;
                 }

@@ -24,11 +24,13 @@ namespace DotRecast.Detour
 {
     public class DtNodePool
     {
-        private readonly Dictionary<long, List<DtNode>> m_map = new Dictionary<long, List<DtNode>>();
-        private readonly List<DtNode> m_nodes = new List<DtNode>();
+        private readonly Dictionary<long, List<DtNode>> m_map;
+        private readonly List<DtNode> m_nodes;
 
         public DtNodePool()
         {
+            m_map = new Dictionary<long, List<DtNode>>();
+            m_nodes = new List<DtNode>();
         }
 
         public void Clear()
@@ -37,22 +39,20 @@ namespace DotRecast.Detour
             m_map.Clear();
         }
 
-        public List<DtNode> FindNodes(long id)
+        public int FindNodes(long id, out List<DtNode> nodes)
         {
-            var hasNode = m_map.TryGetValue(id, out var nodes);
-            ;
-            if (nodes == null)
+            var hasNode = m_map.TryGetValue(id, out nodes);
+            if (hasNode)
             {
-                nodes = new List<DtNode>();
+                return nodes.Count;
             }
 
-            return nodes;
+            return 0;
         }
 
         public DtNode FindNode(long id)
         {
             var hasNode = m_map.TryGetValue(id, out var nodes);
-            ;
             if (nodes != null && 0 != nodes.Count)
             {
                 return nodes[0];

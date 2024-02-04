@@ -274,8 +274,11 @@ namespace DotRecast.Recast
             return dst;
         }
 
-        private static bool FloodRegion(int x, int y, int i, int level, int r, RcCompactHeightfield chf, int[] srcReg,
-            int[] srcDist, List<int> stack)
+        private static bool FloodRegion(int x, int y, int i,
+            int level, int r,
+            RcCompactHeightfield chf,
+            int[] srcReg, int[] srcDist,
+            List<RcLevelStackEntry> stack)
         {
             int w = chf.width;
 
@@ -283,9 +286,7 @@ namespace DotRecast.Recast
 
             // Flood fill mark region.
             stack.Clear();
-            stack.Add(x);
-            stack.Add(y);
-            stack.Add(i);
+            stack.Add(new RcLevelStackEntry(x, y, i));
             srcReg[i] = r;
             srcDist[i] = 0;
 
@@ -294,13 +295,10 @@ namespace DotRecast.Recast
 
             while (stack.Count > 0)
             {
-                int ci = stack[^1];
-                stack.RemoveAt(stack.Count - 1);
-
-                int cy = stack[^1];
-                stack.RemoveAt(stack.Count - 1);
-
-                int cx = stack[^1];
+                RcLevelStackEntry back = stack[^1];
+                int cx = back.x;
+                int cy = back.y;
+                int ci = back.index;
                 stack.RemoveAt(stack.Count - 1);
 
 
@@ -381,9 +379,7 @@ namespace DotRecast.Recast
                         {
                             srcReg[ai] = r;
                             srcDist[ai] = 0;
-                            stack.Add(ax);
-                            stack.Add(ay);
-                            stack.Add(ai);
+                            stack.Add(new RcLevelStackEntry(ax, ay, ai));
                         }
                     }
                 }
@@ -392,8 +388,11 @@ namespace DotRecast.Recast
             return count > 0;
         }
 
-        private static int[] ExpandRegions(int maxIter, int level, RcCompactHeightfield chf, int[] srcReg, int[] srcDist,
-            List<int> stack, bool fillStack)
+        private static void ExpandRegions(int maxIter, int level,
+            RcCompactHeightfield chf,
+            int[] srcReg, int[] srcDist,
+            List<RcLevelStackEntry> stack,
+            bool fillStack)
         {
             int w = chf.width;
             int h = chf.height;
@@ -411,9 +410,7 @@ namespace DotRecast.Recast
                         {
                             if (chf.dist[i] >= level && srcReg[i] == 0 && chf.areas[i] != RC_NULL_AREA)
                             {
-                                stack.Add(x);
-                                stack.Add(y);
-                                stack.Add(i);
+                                stack.Add(new RcLevelStackEntry(x, y, i));
                             }
                         }
                     }
@@ -422,28 +419,28 @@ namespace DotRecast.Recast
             else // use cells in the input stack
             {
                 // mark all cells which already have a region
-                for (int j = 0; j < stack.Count; j += 3)
+                for (int j = 0; j < stack.Count; j++)
                 {
-                    int i = stack[j + 2];
+                    int i = stack[j].index;
                     if (srcReg[i] != 0)
                     {
-                        stack[j + 2] = -1;
+                        stack[j] = new RcLevelStackEntry(stack[j].x, stack[j].y, -1);
                     }
                 }
             }
 
-            List<int> dirtyEntries = new List<int>();
+            List<RcDirtyEntry> dirtyEntries = new List<RcDirtyEntry>();
             int iter = 0;
             while (stack.Count > 0)
             {
                 int failed = 0;
                 dirtyEntries.Clear();
 
-                for (int j = 0; j < stack.Count; j += 3)
+                for (int j = 0; j < stack.Count; j++)
                 {
-                    int x = stack[j + 0];
-                    int y = stack[j + 1];
-                    int i = stack[j + 2];
+                    int x = stack[j].x;
+                    int y = stack[j].y;
+                    int i = stack[j].index;
                     if (i < 0)
                     {
                         failed++;
@@ -481,10 +478,8 @@ namespace DotRecast.Recast
 
                     if (r != 0)
                     {
-                        stack[j + 2] = -1; // mark as used
-                        dirtyEntries.Add(i);
-                        dirtyEntries.Add(r);
-                        dirtyEntries.Add(d2);
+                        stack[j] = new RcLevelStackEntry(stack[j].x, stack[j].y, -1); // mark as used
+                        dirtyEntries.Add(new RcDirtyEntry(i, r, d2));
                     }
                     else
                     {
@@ -493,14 +488,14 @@ namespace DotRecast.Recast
                 }
 
                 // Copy entries that differ between src and dst to keep them in sync.
-                for (int i = 0; i < dirtyEntries.Count; i += 3)
+                for (int i = 0; i < dirtyEntries.Count; i++)
                 {
-                    int idx = dirtyEntries[i];
-                    srcReg[idx] = dirtyEntries[i + 1];
-                    srcDist[idx] = dirtyEntries[i + 2];
+                    int idx = dirtyEntries[i].index;
+                    srcReg[idx] = dirtyEntries[i].region;
+                    srcDist[idx] = dirtyEntries[i].distance2;
                 }
 
-                if (failed * 3 == stack.Count())
+                if (failed == stack.Count())
                 {
                     break;
                 }
@@ -514,12 +509,13 @@ namespace DotRecast.Recast
                     }
                 }
             }
-
-            return srcReg;
         }
 
-        private static void SortCellsByLevel(int startLevel, RcCompactHeightfield chf, int[] srcReg, int nbStacks,
-            List<List<int>> stacks, int loglevelsPerStack) // the levels per stack (2 in our case) as a bit shift
+        private static void SortCellsByLevel(int startLevel,
+            RcCompactHeightfield chf,
+            int[] srcReg,
+            int nbStacks, List<List<RcLevelStackEntry>> stacks,
+            int loglevelsPerStack) // the levels per stack (2 in our case) as a bit shift
         {
             int w = chf.width;
             int h = chf.height;
@@ -555,27 +551,25 @@ namespace DotRecast.Recast
                             sId = 0;
                         }
 
-                        stacks[sId].Add(x);
-                        stacks[sId].Add(y);
-                        stacks[sId].Add(i);
+                        stacks[sId].Add(new RcLevelStackEntry(x, y, i));
                     }
                 }
             }
         }
 
-        private static void AppendStacks(List<int> srcStack, List<int> dstStack, int[] srcReg)
+        private static void AppendStacks(List<RcLevelStackEntry> srcStack,
+            List<RcLevelStackEntry> dstStack,
+            int[] srcReg)
         {
-            for (int j = 0; j < srcStack.Count; j += 3)
+            for (int j = 0; j < srcStack.Count; j++)
             {
-                int i = srcStack[j + 2];
+                int i = srcStack[j].index;
                 if ((i < 0) || (srcReg[i] != 0))
                 {
                     continue;
                 }
 
                 dstStack.Add(srcStack[j]);
-                dstStack.Add(srcStack[j + 1]);
-                dstStack.Add(srcStack[j + 2]);
             }
         }
 
@@ -1169,7 +1163,7 @@ namespace DotRecast.Recast
             }
         }
 
-        private static int MergeAndFilterLayerRegions(RcContext ctx, int minRegionArea, int maxRegionId, RcCompactHeightfield chf, int[] srcReg, List<int> overlaps)
+        private static bool MergeAndFilterLayerRegions(RcContext ctx, int minRegionArea, ref int maxRegionId, RcCompactHeightfield chf, int[] srcReg)
         {
             int w = chf.width;
             int h = chf.height;
@@ -1207,10 +1201,10 @@ namespace DotRecast.Recast
 
                         reg.spanCount++;
                         reg.areaType = area;
-                        
+
                         reg.ymin = Math.Min(reg.ymin, s.y);
                         reg.ymax = Math.Max(reg.ymax, s.y);
-                        
+
                         // Collect all region layers.
                         lregs.Add(ri);
 
@@ -1404,7 +1398,7 @@ namespace DotRecast.Recast
                 }
             }
 
-            return maxRegionId;
+            return true;
         }
 
         /// @par
@@ -1673,13 +1667,13 @@ namespace DotRecast.Recast
 
             int LOG_NB_STACKS = 3;
             int NB_STACKS = 1 << LOG_NB_STACKS;
-            List<List<int>> lvlStacks = new List<List<int>>();
+            List<List<RcLevelStackEntry>> lvlStacks = new List<List<RcLevelStackEntry>>();
             for (int i = 0; i < NB_STACKS; ++i)
             {
-                lvlStacks.Add(new List<int>(1024));
+                lvlStacks.Add(new List<RcLevelStackEntry>(256));
             }
 
-            List<int> stack = new List<int>(1024);
+            List<RcLevelStackEntry> stack = new List<RcLevelStackEntry>(256);
 
             int[] srcReg = new int[chf.spanCount];
             int[] srcDist = new int[chf.spanCount];
@@ -1740,11 +1734,12 @@ namespace DotRecast.Recast
                 ctx.StartTimer(RcTimerLabel.RC_TIMER_BUILD_REGIONS_FLOOD);
 
                 // Mark new regions with IDs.
-                for (int j = 0; j < lvlStacks[sId].Count; j += 3)
+                for (int j = 0; j < lvlStacks[sId].Count; j++)
                 {
-                    int x = lvlStacks[sId][j];
-                    int y = lvlStacks[sId][j + 1];
-                    int i = lvlStacks[sId][j + 2];
+                    RcLevelStackEntry current = lvlStacks[sId][j];
+                    int x = current.x;
+                    int y = current.y;
+                    int i = current.index;
                     if (i >= 0 && srcReg[i] == 0)
                     {
                         if (FloodRegion(x, y, i, level, regionId, chf, srcReg, srcDist, stack))
@@ -1786,7 +1781,7 @@ namespace DotRecast.Recast
             }
         }
 
-        public static void BuildLayerRegions(RcContext ctx, RcCompactHeightfield chf, int minRegionArea)
+        public static bool BuildLayerRegions(RcContext ctx, RcCompactHeightfield chf, int minRegionArea)
         {
             using var timer = ctx.ScopedTimer(RcTimerLabel.RC_TIMER_BUILD_REGIONS);
 
@@ -1929,13 +1924,15 @@ namespace DotRecast.Recast
                 }
             }
 
-            ctx.StartTimer(RcTimerLabel.RC_TIMER_BUILD_REGIONS_FILTER);
-
-            // Merge monotone regions to layers and remove small regions.
-            List<int> overlaps = new List<int>();
-            chf.maxRegions = MergeAndFilterLayerRegions(ctx, minRegionArea, id, chf, srcReg, overlaps);
-
-            ctx.StopTimer(RcTimerLabel.RC_TIMER_BUILD_REGIONS_FILTER);
+            using (var timerFilter = ctx.ScopedTimer(RcTimerLabel.RC_TIMER_BUILD_REGIONS_FILTER))
+            {
+                // Merge monotone regions to layers and remove small regions.
+                chf.maxRegions = id;
+                if (!MergeAndFilterLayerRegions(ctx, minRegionArea, ref chf.maxRegions, chf, srcReg))
+                {
+                    return false;
+                }
+            }
 
             // Store the result out.
             for (int i = 0; i < chf.spanCount; ++i)
@@ -1945,6 +1942,8 @@ namespace DotRecast.Recast
                     .WithReg(srcReg[i])
                     .Build();
             }
+
+            return true;
         }
     }
 }

@@ -187,20 +187,20 @@ namespace DotRecast.Detour.Crowd
                 return;
             }
 
-            // Overshoot a little. This helps to optimize open fields in tiled
-            // meshes.
+            // Overshoot a little. This helps to optimize open fields in tiled meshes.
             dist = Math.Min(dist + 0.01f, pathOptimizationRange);
 
             // Adjust ray length.
             var delta = RcVec3f.Subtract(next, m_pos);
             RcVec3f goal = RcVecUtils.Mad(m_pos, delta, pathOptimizationRange / dist);
 
-            var status = navquery.Raycast(m_path[0], m_pos, goal, filter, 0, 0, out var rayHit);
+            var res = new List<long>();
+            var status = navquery.Raycast(m_path[0], m_pos, goal, filter, out var t, out var norm, ref res);
             if (status.Succeeded())
             {
-                if (rayHit.path.Count > 1 && rayHit.t > 0.99f)
+                if (res.Count > 1 && t > 0.99f)
                 {
-                    m_path = DtPathUtils.MergeCorridorStartShortcut(m_path, rayHit.path);
+                    m_path = DtPathUtils.MergeCorridorStartShortcut(m_path, res);
                 }
             }
         }
