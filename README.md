@@ -1,9 +1,14 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![GitHub repo size](https://img.shields.io/github/repo-size/ikpil/UniRecast)
-![Languages](https://img.shields.io/github/languages/top/ikpil/UniRecast)
-[![CodeQL](https://github.com/ikpil/UniRecast/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/ikpil/UniRecast/actions/workflows/github-code-scanning/codeql)
-[![Visitors](https://api.visitorbadge.io/api/daily?path=ikpil%2FUniRecast&countColor=%23263759&style=flat-square)](https://visitorbadge.io/status?path=ikpil%2FUniRecast)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/ikpil?style=flat-square&logo=GitHub-Sponsors&link=https%3A%2F%2Fgithub.com%2Fsponsors%2Fikpil)](https://github.com/sponsors/ikpil)
+![GitHub License](https://img.shields.io/github/license/ikpil/UniRecast?style=for-the-badge)
+![Languages](https://img.shields.io/github/languages/top/ikpil/UniRecast?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/ikpil/UniRecast?style=for-the-badge)
+[![GitHub Repo stars](https://img.shields.io/github/stars/ikpil/UniRecast?style=for-the-badge&logo=github)](https://github.com/ikpil/UniRecast)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ikpil/UniRecast/github-code-scanning%2Fcodeql?style=for-the-badge&label=CODEQL)](https://github.com/ikpil/UniRecast/actions/workflows/github-code-scanning/codeql)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/ikpil/UniRecast?style=for-the-badge&logo=github)](https://github.com/ikpil/UniRecast/commits)
+[![GitHub issues](https://img.shields.io/github/issues-raw/ikpil/UniRecast?style=for-the-badge&logo=github&color=44cc11)](https://github.com/ikpil/UniRecast/issues)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/ikpil/UniRecast?style=for-the-badge&logo=github&color=a371f7)](https://github.com/ikpil/UniRecast/issues)
+[![Visitors](https://api.visitorbadge.io/api/daily?path=ikpil%2FUniRecast&countColor=%23263759)](https://visitorbadge.io/status?path=ikpil%2FUniRecast)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/ikpil?style=for-the-badge&logo=GitHub-Sponsors&link=https%3A%2F%2Fgithub.com%2Fsponsors%2Fikpil)](https://github.com/sponsors/ikpil)
+
 
 # this is Alpha
 
