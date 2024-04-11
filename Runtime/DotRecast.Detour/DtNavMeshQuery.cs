@@ -31,14 +31,17 @@ namespace DotRecast.Detour
         /// < Add a vertex at every polygon edge crossing.
         protected readonly DtNavMesh m_nav;
 
+        protected readonly DtNodePool m_tinyNodePool;
         protected readonly DtNodePool m_nodePool;
         protected readonly DtNodeQueue m_openList;
+
         protected DtQueryData m_query;
 
         /// < Sliced query state.
         public DtNavMeshQuery(DtNavMesh nav)
         {
             m_nav = nav;
+            m_tinyNodePool = new DtNodePool();
             m_nodePool = new DtNodePool();
             m_openList = new DtNodeQueue();
         }
@@ -580,8 +583,8 @@ namespace DotRecast.Detour
                 var tbmax = tile.data.header.bmax;
                 float qfac = tile.data.header.bvQuantFactor;
                 // Calculate quantized box
-                int[] bmin = new int[3];
-                int[] bmax = new int[3];
+                Span<int> bmin = stackalloc int[3];
+                Span<int> bmax = stackalloc int[3];
                 // dtClamp query box to world box.
                 float minx = Math.Clamp(qmin.X, tbmin.X, tbmax.X) - tbmin.X;
                 float miny = Math.Clamp(qmin.Y, tbmin.Y, tbmax.Y) - tbmin.Y;
@@ -723,26 +726,29 @@ namespace DotRecast.Detour
             return tiles;
         }
 
-        /**
-     * Finds a path from the start polygon to the end polygon.
-     *
-     * If the end polygon cannot be reached through the navigation graph, the last polygon in the path will be the
-     * nearest the end polygon.
-     *
-     * The start and end positions are used to calculate traversal costs. (The y-values impact the result.)
-     *
-     * @param startRef
-     *            The reference id of the start polygon.
-     * @param endRef
-     *            The reference id of the end polygon.
-     * @param startPos
-     *            A position within the start polygon. [(x, y, z)]
-     * @param endPos
-     *            A position within the end polygon. [(x, y, z)]
-     * @param filter
-     *            The polygon filter to apply to the query.
-     * @return Found path
-     */
+        /// @par
+        ///
+        /// If the end polygon cannot be reached through the navigation graph,
+        /// the last polygon in the path will be the nearest the end polygon.
+        ///
+        /// If the path array is to small to hold the full result, it will be filled as 
+        /// far as possible from the start polygon toward the end polygon.
+        ///
+        /// The start and end positions are used to calculate traversal costs. 
+        /// (The y-values impact the result.)
+        ///
+        /// @name Standard Pathfinding Functions
+        /// @{
+        /// Finds a path from the start polygon to the end polygon.
+        ///  @param[in]		startRef	The reference id of the start polygon.
+        ///  @param[in]		endRef		The reference id of the end polygon.
+        ///  @param[in]		startPos	A position within the start polygon. [(x, y, z)]
+        ///  @param[in]		endPos		A position within the end polygon. [(x, y, z)]
+        ///  @param[in]		filter		The polygon filter to apply to the query.
+        ///  @param[out]	path		An ordered list of polygon references representing the path. (Start to end.) 
+        ///  							[(polyRef) * @p pathCount]
+        ///  @param[out]	pathCount	The number of polygons returned in the @p path array.
+        ///  @param[in]		maxPath		The maximum number of polygons the @p path array can hold. [Limit: >= 1]
         public DtStatus FindPath(long startRef, long endRef, RcVec3f startPos, RcVec3f endPos, IDtQueryFilter filter, ref List<long> path, DtFindPathOption fpo)
         {
             if (null == path)
@@ -1796,9 +1802,9 @@ namespace DotRecast.Detour
                 return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
             }
 
-            DtNodePool tinyNodePool = new DtNodePool();
+            m_tinyNodePool.Clear();
 
-            DtNode startNode = tinyNodePool.GetNode(startRef);
+            DtNode startNode = m_tinyNodePool.GetNode(startRef);
             startNode.pidx = 0;
             startNode.cost = 0;
             startNode.total = 0;
@@ -1817,6 +1823,9 @@ namespace DotRecast.Detour
             float searchRadSqr = RcMath.Sqr(RcVec3f.Distance(startPos, endPos) / 2.0f + 0.001f);
 
             float[] verts = new float[m_nav.GetMaxVertsPerPoly() * 3];
+
+            const int MAX_NEIS = 8;
+            Span<long> neis = stackalloc long[MAX_NEIS];
 
             while (0 < stack.Count)
             {
@@ -1848,9 +1857,7 @@ namespace DotRecast.Detour
                 for (int i = 0, j = curPoly.vertCount - 1; i < curPoly.vertCount; j = i++)
                 {
                     // Find links to neighbours.
-                    int MAX_NEIS = 8;
                     int nneis = 0;
-                    long[] neis = new long[MAX_NEIS];
 
                     if ((curPoly.neis[j] & DtNavMesh.DT_EXT_LINK) != 0)
                     {
@@ -1903,7 +1910,7 @@ namespace DotRecast.Detour
                     {
                         for (int k = 0; k < nneis; ++k)
                         {
-                            DtNode neighbourNode = tinyNodePool.GetNode(neis[k]);
+                            DtNode neighbourNode = m_tinyNodePool.GetNode(neis[k]);
                             // Skip if already visited.
                             if ((neighbourNode.flags & DtNodeFlags.DT_NODE_CLOSED) != 0)
                             {
@@ -1921,7 +1928,7 @@ namespace DotRecast.Detour
                             }
 
                             // Mark as the node as visited and push to queue.
-                            neighbourNode.pidx = tinyNodePool.GetNodeIdx(curNode);
+                            neighbourNode.pidx = m_tinyNodePool.GetNodeIdx(curNode);
                             neighbourNode.flags |= DtNodeFlags.DT_NODE_CLOSED;
                             stack.AddLast(neighbourNode);
                         }
@@ -1936,8 +1943,8 @@ namespace DotRecast.Detour
                 DtNode node = bestNode;
                 do
                 {
-                    DtNode next = tinyNodePool.GetNodeAtIdx(node.pidx);
-                    node.pidx = tinyNodePool.GetNodeIdx(prev);
+                    DtNode next = m_tinyNodePool.GetNodeAtIdx(node.pidx);
+                    node.pidx = m_tinyNodePool.GetNodeIdx(prev);
                     prev = node;
                     node = next;
                 } while (node != null);
@@ -1947,7 +1954,7 @@ namespace DotRecast.Detour
                 do
                 {
                     visited.Add(node.id);
-                    node = tinyNodePool.GetNodeAtIdx(node.pidx);
+                    node = m_tinyNodePool.GetNodeAtIdx(node.pidx);
                 } while (node != null);
             }
 
@@ -2853,9 +2860,9 @@ namespace DotRecast.Detour
             resultRef.Clear();
             resultParent.Clear();
 
-            DtNodePool tinyNodePool = new DtNodePool();
+            m_tinyNodePool.Clear();
 
-            DtNode startNode = tinyNodePool.GetNode(startRef);
+            DtNode startNode = m_tinyNodePool.GetNode(startRef);
             startNode.pidx = 0;
             startNode.id = startRef;
             startNode.flags = DtNodeFlags.DT_NODE_CLOSED;
@@ -2891,7 +2898,7 @@ namespace DotRecast.Detour
                         continue;
                     }
 
-                    DtNode neighbourNode = tinyNodePool.GetNode(neighbourRef);
+                    DtNode neighbourNode = m_tinyNodePool.GetNode(neighbourRef);
                     // Skip visited.
                     if ((neighbourNode.flags & DtNodeFlags.DT_NODE_CLOSED) != 0)
                     {
@@ -2931,7 +2938,7 @@ namespace DotRecast.Detour
                     // Mark node visited, this is done before the overlap test so that
                     // we will not visit the poly again if the test fails.
                     neighbourNode.flags |= DtNodeFlags.DT_NODE_CLOSED;
-                    neighbourNode.pidx = tinyNodePool.GetNodeIdx(curNode);
+                    neighbourNode.pidx = m_tinyNodePool.GetNodeIdx(curNode);
 
                     // Check that the polygon does not collide with existing polygons.
 
@@ -3428,7 +3435,7 @@ namespace DotRecast.Detour
             }
 
             DtNode endNode = endNodes[0];
-            
+
             return GetPathToNode(endNode, ref path);
         }
 
