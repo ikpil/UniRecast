@@ -123,7 +123,8 @@ namespace DotRecast.Recast
                 limits.Clear();
             }
 
-            return results.ToList();
+            var list = results.ToList();
+            return list;
         }
 
         public RcBuilderResult BuildTile(IInputGeomProvider geom, RcConfig cfg, RcVec3f bmin, RcVec3f bmax, int tx, int ty, RcAtomicInteger progress, int total)
