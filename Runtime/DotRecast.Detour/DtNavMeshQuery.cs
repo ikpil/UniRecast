@@ -41,9 +41,9 @@ namespace DotRecast.Detour
         public DtNavMeshQuery(DtNavMesh nav)
         {
             m_nav = nav;
-            m_tinyNodePool = new DtNodePool();
             m_nodePool = new DtNodePool();
             m_openList = new DtNodeQueue();
+            m_tinyNodePool = new DtNodePool();
         }
 
         /// Returns random location on navmesh.
@@ -137,12 +137,12 @@ namespace DotRecast.Detour
             }
 
             // Randomly pick point on polygon.
-            float[] verts = new float[3 * m_nav.GetMaxVertsPerPoly()];
-            float[] areas = new float[m_nav.GetMaxVertsPerPoly()];
-            RcArrays.Copy(tile.data.verts, poly.verts[0] * 3, verts, 0, 3);
+            Span<float> verts = stackalloc float[3 * m_nav.GetMaxVertsPerPoly()];
+            Span<float> areas = stackalloc float[m_nav.GetMaxVertsPerPoly()];
+            RcSpans.Copy(tile.data.verts, poly.verts[0] * 3, verts, 0, 3);
             for (int j = 1; j < poly.vertCount; ++j)
             {
-                RcArrays.Copy(tile.data.verts, poly.verts[j] * 3, verts, j * 3, 3);
+                RcSpans.Copy(tile.data.verts, poly.verts[j] * 3, verts, j * 3, 3);
             }
 
             float s = frand.Next();
@@ -386,7 +386,7 @@ namespace DotRecast.Detour
             float s = frand.Next();
             float t = frand.Next();
 
-            float[] areas = new float[randomPolyVerts.Length / 3];
+            Span<float> areas = stackalloc float[randomPolyVerts.Length / 3];
             RcVec3f pt = DtUtils.RandomPointInConvexPoly(randomPolyVerts, randomPolyVerts.Length / 3, areas, s, t);
             ClosestPointOnPoly(randomPolyRef, pt, out var closest, out var _);
 
@@ -457,13 +457,13 @@ namespace DotRecast.Detour
             }
 
             // Collect vertices.
-            float[] verts = new float[m_nav.GetMaxVertsPerPoly() * 3];
-            float[] edged = new float[m_nav.GetMaxVertsPerPoly()];
-            float[] edget = new float[m_nav.GetMaxVertsPerPoly()];
+            Span<float> verts = stackalloc float[m_nav.GetMaxVertsPerPoly() * 3];
+            Span<float> edged = stackalloc float[m_nav.GetMaxVertsPerPoly()];
+            Span<float> edget = stackalloc float[m_nav.GetMaxVertsPerPoly()];
             int nv = poly.vertCount;
             for (int i = 0; i < nv; ++i)
             {
-                RcArrays.Copy(tile.data.verts, poly.verts[i] * 3, verts, i * 3, 3);
+                RcSpans.Copy(tile.data.verts, poly.verts[i] * 3, verts, i * 3, 3);
             }
 
             if (DtUtils.DistancePtPolyEdgesSqr(pos, verts, nv, edged, edget))
@@ -1822,7 +1822,7 @@ namespace DotRecast.Detour
             var searchPos = RcVec3f.Lerp(startPos, endPos, 0.5f);
             float searchRadSqr = RcMath.Sqr(RcVec3f.Distance(startPos, endPos) / 2.0f + 0.001f);
 
-            float[] verts = new float[m_nav.GetMaxVertsPerPoly() * 3];
+            Span<float> verts = stackalloc float[m_nav.GetMaxVertsPerPoly() * 3];
 
             const int MAX_NEIS = 8;
             Span<long> neis = stackalloc long[MAX_NEIS];
@@ -1842,7 +1842,7 @@ namespace DotRecast.Detour
                 int nverts = curPoly.vertCount;
                 for (int i = 0; i < nverts; ++i)
                 {
-                    RcArrays.Copy(curTile.data.verts, curPoly.verts[i] * 3, verts, i * 3, 3);
+                    RcSpans.Copy(curTile.data.verts, curPoly.verts[i] * 3, verts, i * 3, 3);
                 }
 
                 // If target is inside the poly, stop search.
@@ -2245,7 +2245,7 @@ namespace DotRecast.Detour
             hit.path.Clear();
             hit.pathCost = 0;
 
-            RcVec3f[] verts = new RcVec3f[m_nav.GetMaxVertsPerPoly() + 1];
+            Span<RcVec3f> verts = stackalloc RcVec3f[m_nav.GetMaxVertsPerPoly() + 1];
 
             RcVec3f curPos = RcVec3f.Zero;
             RcVec3f lastPos = RcVec3f.Zero;
@@ -2874,8 +2874,8 @@ namespace DotRecast.Detour
 
             float radiusSqr = RcMath.Sqr(radius);
 
-            float[] pa = new float[m_nav.GetMaxVertsPerPoly() * 3];
-            float[] pb = new float[m_nav.GetMaxVertsPerPoly() * 3];
+            Span<float> pa = stackalloc float[m_nav.GetMaxVertsPerPoly() * 3];
+            Span<float> pb = stackalloc float[m_nav.GetMaxVertsPerPoly() * 3];
 
             while (0 < stack.Count)
             {
@@ -2946,7 +2946,7 @@ namespace DotRecast.Detour
                     int npa = neighbourPoly.vertCount;
                     for (int k = 0; k < npa; ++k)
                     {
-                        RcArrays.Copy(neighbourTile.data.verts, neighbourPoly.verts[k] * 3, pa, k * 3, 3);
+                        RcSpans.Copy(neighbourTile.data.verts, neighbourPoly.verts[k] * 3, pa, k * 3, 3);
                     }
 
                     bool overlap = false;
@@ -2977,7 +2977,7 @@ namespace DotRecast.Detour
                         int npb = pastPoly.vertCount;
                         for (int k = 0; k < npb; ++k)
                         {
-                            RcArrays.Copy(pastTile.data.verts, pastPoly.verts[k] * 3, pb, k * 3, 3);
+                            RcSpans.Copy(pastTile.data.verts, pastPoly.verts[k] * 3, pb, k * 3, 3);
                         }
 
                         if (DtUtils.OverlapPolyPoly2D(pa, npa, pb, npb))

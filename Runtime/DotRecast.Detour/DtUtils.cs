@@ -97,7 +97,7 @@ namespace DotRecast.Detour
         /// @par
         ///
         /// All vertices are projected onto the xz-plane, so the y-values are ignored.
-        public static bool OverlapPolyPoly2D(float[] polya, int npolya, float[] polyb, int npolyb)
+        public static bool OverlapPolyPoly2D(Span<float> polya, int npolya, Span<float> polyb, int npolyb)
         {
             const float eps = 1e-4f;
             for (int i = 0, j = npolya - 1; i < npolya; j = i++)
@@ -145,7 +145,7 @@ namespace DotRecast.Detour
         /// @param[in] b Vertex B. [(x, y, z)]
         /// @param[in] c Vertex C. [(x, y, z)]
         /// @return The signed xz-plane area of the triangle.
-        public static float TriArea2D(float[] verts, int a, int b, int c)
+        public static float TriArea2D(Span<float> verts, int a, int b, int c)
         {
             float abx = verts[b] - verts[a];
             float abz = verts[b + 2] - verts[a + 2];
@@ -165,7 +165,7 @@ namespace DotRecast.Detour
 
         // Returns a random point in a convex polygon.
         // Adapted from Graphics Gems article.
-        public static RcVec3f RandomPointInConvexPoly(float[] pts, int npts, float[] areas, float s, float t)
+        public static RcVec3f RandomPointInConvexPoly(Span<float> pts, int npts, Span<float> areas, float s, float t)
         {
             // Calc triangle araes
             float areasum = 0.0f;
@@ -246,7 +246,7 @@ namespace DotRecast.Detour
             return false;
         }
 
-        public static RcVec2f ProjectPoly(RcVec3f axis, float[] poly, int npoly)
+        public static RcVec2f ProjectPoly(RcVec3f axis, Span<float> poly, int npoly)
         {
             float rmin, rmax;
             rmin = rmax = axis.Dot2D(poly, 0);
@@ -267,7 +267,7 @@ namespace DotRecast.Detour
         /// @par
         ///
         /// All points are projected onto the xz-plane, so the y-values are ignored.
-        public static bool PointInPolygon(RcVec3f pt, float[] verts, int nverts)
+        public static bool PointInPolygon(RcVec3f pt, Span<float> verts, int nverts)
         {
             // TODO: Replace pnpoly with triArea2D tests?
             int i, j;
@@ -286,7 +286,7 @@ namespace DotRecast.Detour
             return c;
         }
 
-        public static bool DistancePtPolyEdgesSqr(RcVec3f pt, float[] verts, int nverts, float[] ed, float[] et)
+        public static bool DistancePtPolyEdgesSqr(RcVec3f pt, Span<float> verts, int nverts, Span<float> ed, Span<float> et)
         {
             // TODO: Replace pnpoly with triArea2D tests?
             int i, j;
@@ -307,7 +307,7 @@ namespace DotRecast.Detour
             return c;
         }
 
-        public static float DistancePtSegSqr2D(RcVec3f pt, float[] verts, int p, int q, out float t)
+        public static float DistancePtSegSqr2D(RcVec3f pt, Span<float> verts, int p, int q, out float t)
         {
             var vp = RcVecUtils.Create(verts, p);
             var vq = RcVecUtils.Create(verts, q);
@@ -342,7 +342,7 @@ namespace DotRecast.Detour
         }
 
         public static bool IntersectSegmentPoly2D(RcVec3f p0, RcVec3f p1,
-            RcVec3f[] verts, int nverts,
+            Span<RcVec3f> verts, int nverts,
             out float tmin, out float tmax,
             out int segMin, out int segMax)
         {
