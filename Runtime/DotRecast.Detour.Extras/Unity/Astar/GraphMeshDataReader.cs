@@ -22,6 +22,8 @@ using DotRecast.Core;
 
 namespace DotRecast.Detour.Extras.Unity.Astar
 {
+    using static DtDetour;
+
     public class GraphMeshDataReader : ZipBinaryReader
     {
         public const float INT_PRECISION_FACTOR = 1000f;
@@ -76,7 +78,7 @@ namespace DotRecast.Detour.Extras.Unity.Astar
                     int nodeCount = buffer.GetInt();
                     DtPoly[] nodes = new DtPoly[nodeCount];
                     DtPolyDetail[] detailNodes = new DtPolyDetail[nodeCount];
-                    float[] detailVerts = new float[0];
+                    float[] detailVerts = Array.Empty<float>();
                     int[] detailTris = new int[4 * nodeCount];
                     int vertMask = GetVertMask(vertsCount);
                     float ymin = float.PositiveInfinity;
@@ -116,8 +118,8 @@ namespace DotRecast.Detour.Extras.Unity.Astar
                     tiles[tileIndex].detailVerts = detailVerts;
                     tiles[tileIndex].detailTris = detailTris;
                     DtMeshHeader header = new DtMeshHeader();
-                    header.magic = DtNavMesh.DT_NAVMESH_MAGIC;
-                    header.version = DtNavMesh.DT_NAVMESH_VERSION;
+                    header.magic = DT_NAVMESH_MAGIC;
+                    header.version = DT_NAVMESH_VERSION;
                     header.x = x;
                     header.y = z;
                     header.polyCount = nodeCount;

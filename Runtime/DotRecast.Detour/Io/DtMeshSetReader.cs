@@ -22,6 +22,8 @@ using DotRecast.Core;
 
 namespace DotRecast.Detour.Io
 {
+    using static DtDetour;
+
     public class DtMeshSetReader
     {
         private readonly DtMeshDataReader meshReader = new DtMeshDataReader();
@@ -66,7 +68,8 @@ namespace DotRecast.Detour.Io
             }
 
             bool cCompatibility = header.version == NavMeshSetHeader.NAVMESHSET_VERSION;
-            DtNavMesh mesh = new DtNavMesh(header.option, header.maxVertsPerPoly);
+            DtNavMesh mesh = new DtNavMesh();
+            mesh.Init(header.option, header.maxVertsPerPoly);
             ReadTiles(bb, is32Bit, ref header, cCompatibility, mesh);
             return mesh;
         }
@@ -131,7 +134,7 @@ namespace DotRecast.Detour.Io
                 }
 
                 DtMeshData data = meshReader.Read(bb, mesh.GetMaxVertsPerPoly(), is32Bit);
-                mesh.AddTile(data, i, tileHeader.tileRef);
+                mesh.AddTile(data, i, tileHeader.tileRef, out _);
             }
         }
 
@@ -147,7 +150,7 @@ namespace DotRecast.Detour.Io
             int salt = ((refs >> (m_polyBits + m_tileBits)) & saltMask);
             int it = ((refs >> m_polyBits) & tileMask);
             int ip = refs & polyMask;
-            return DtNavMesh.EncodePolyId(salt, it, ip);
+            return EncodePolyId(salt, it, ip);
         }
     }
 }

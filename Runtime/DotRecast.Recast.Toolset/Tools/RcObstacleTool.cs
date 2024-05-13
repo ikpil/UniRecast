@@ -42,7 +42,7 @@ namespace DotRecast.Recast.Toolset.Tools
             // Init cache
             var bmin = geom.GetMeshBoundsMin();
             var bmax = geom.GetMeshBoundsMax();
-            RcCommons.CalcGridSize(bmin, bmax, setting.cellSize, out var gw, out var gh);
+            RcRecast.CalcGridSize(bmin, bmax, setting.cellSize, out var gw, out var gh);
             int ts = setting.tileSize;
             int tw = (gw + ts - 1) / ts;
             int th = (gh + ts - 1) / ts;
@@ -141,7 +141,8 @@ namespace DotRecast.Recast.Toolset.Tools
             navMeshParams.maxTiles = 256; // ..
             navMeshParams.maxPolys = 16384;
 
-            var navMesh = new DtNavMesh(navMeshParams, 6);
+            var navMesh = new DtNavMesh();
+            navMesh.Init(navMeshParams, 6);
             var comp = _comp.Create(cCompatibility ? 0 : 1);
             var storageParams = new DtTileCacheStorageParams(order, cCompatibility);
             DtTileCache tc = new DtTileCache(option, storageParams, navMesh, comp, _proc);
