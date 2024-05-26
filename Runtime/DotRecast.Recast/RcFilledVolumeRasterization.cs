@@ -1,6 +1,6 @@
 /*
 recast4j copyright (c) 2021 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -507,8 +507,8 @@ namespace DotRecast.Recast
             for (int i = 0; i < 8; i++)
             {
                 int vi = i * 3;
-                if (vertices[vi] >= rectangle[0] && vertices[vi] < rectangle[2] && vertices[vi + 2] >= rectangle[1]
-                    && vertices[vi + 2] < rectangle[3])
+                if (vertices[vi] >= rectangle[0] && vertices[vi] < rectangle[2] &&
+                    vertices[vi + 2] >= rectangle[1] && vertices[vi + 2] < rectangle[3])
                 {
                     yMin = Math.Min(yMin, vertices[vi + 1]);
                     yMax = Math.Max(yMax, vertices[vi + 1]);

@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -20,21 +20,13 @@ freely, subject to the following restrictions:
 
 namespace DotRecast.Detour
 {
-    /**
- * Bounding volume node.
- *
- * @note This structure is rarely if ever used by the end user.
- * @see MeshTile
- */
+    /// Bounding volume node.
+    /// @note This structure is rarely if ever used by the end user.
+    /// @see dtMeshTile
     public class DtBVNode
     {
-        /** Minimum bounds of the node's AABB. [(x, y, z)] */
-        public int[] bmin = new int[3];
-
-        /** Maximum bounds of the node's AABB. [(x, y, z)] */
-        public int[] bmax = new int[3];
-
-        /** The node's index. (Negative for escape sequence.) */
-        public int i;
+        public int[] bmin = new int[3]; //< Minimum bounds of the node's AABB. [(x, y, z)]
+        public int[] bmax = new int[3]; //< Maximum bounds of the node's AABB. [(x, y, z)]
+        public int i; //< The node's index. (Negative for escape sequence.)
     }
 }

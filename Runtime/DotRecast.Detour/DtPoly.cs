@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,10 @@ namespace DotRecast.Detour
     /// @ingroup detour
     public class DtPoly
     {
-        /// Index to first link in linked list. (Or #DT_NULL_LINK if there is no link.)
         public readonly int index;
+        
+        /// Index to first link in linked list. (Or #DT_NULL_LINK if there is no link.)
+        public int firstLink;
 
         /// The indices of the polygon's vertices.
         /// The actual vertices are located in dtMeshTile::verts.

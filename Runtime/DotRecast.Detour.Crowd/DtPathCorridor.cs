@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -133,42 +133,42 @@ namespace DotRecast.Detour.Crowd
         ///  @param[in]		navquery		The query object used to build the corridor.
         ///  @param[in]		filter			The filter to apply to the operation.
         /// @return The number of corners returned in the corner buffers. [0 <= value <= @p maxCorners]
-        public int FindCorners(ref List<DtStraightPath> corners, int maxCorners, DtNavMeshQuery navquery, IDtQueryFilter filter)
+        public int FindCorners(Span<DtStraightPath> corners, int maxCorners, DtNavMeshQuery navquery, IDtQueryFilter filter)
         {
             const float MIN_TARGET_DIST = 0.01f;
 
-            var result = navquery.FindStraightPath(m_pos, m_target, m_path, m_npath, ref corners, maxCorners, 0);
-            if (result.Succeeded())
+            int ncorners = 0;
+            navquery.FindStraightPath(m_pos, m_target, m_path, m_npath, corners, out ncorners, maxCorners, 0);
+
+            // Prune points in the beginning of the path which are too close.
+            while (0 < ncorners)
             {
-                // Prune points in the beginning of the path which are too close.
-                int start = 0;
-                foreach (DtStraightPath spi in corners)
+                if ((corners[0].flags & DtStraightPathFlags.DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0 ||
+                    RcVecUtils.Dist2DSqr(corners[0].pos, m_pos) > RcMath.Sqr(MIN_TARGET_DIST))
                 {
-                    if ((spi.flags & DtStraightPathFlags.DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0
-                        || RcVecUtils.Dist2DSqr(spi.pos, m_pos) > RcMath.Sqr(MIN_TARGET_DIST))
-                    {
-                        break;
-                    }
-
-                    start++;
+                    break;
                 }
 
-                int end = corners.Count;
-                // Prune points after an off-mesh connection.
-                for (int i = start; i < corners.Count; i++)
+                ncorners--;
+                if (0 < ncorners)
                 {
-                    DtStraightPath spi = corners[i];
-                    if ((spi.flags & DtStraightPathFlags.DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0)
-                    {
-                        end = i + 1;
-                        break;
-                    }
+                    RcSpans.Move(corners, 1, 0, 3);
                 }
-
-                corners = corners.GetRange(start, end - start);
             }
 
-            return corners.Count;
+
+            // Prune points after an off-mesh connection.
+            for (int i = 0; i < ncorners; ++i)
+            {
+                if ((corners[i].flags & DtStraightPathFlags.DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0)
+                {
+                    ncorners = i + 1;
+                    break;
+                }
+            }
+
+
+            return ncorners;
         }
 
         /**

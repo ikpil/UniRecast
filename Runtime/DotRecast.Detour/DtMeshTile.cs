@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -18,35 +18,22 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-using System.Collections.Generic;
-
 namespace DotRecast.Detour
 {
     using static DtDetour;
 
-    /**
-     * Defines a navigation mesh tile.
-     */
+    /// Defines a navigation mesh tile.
+    /// @ingroup detour
     public class DtMeshTile
     {
-        public readonly int index;
+        public readonly int index; // DtNavMesh.m_tiles array index
+        public int linksFreeList = DT_NULL_LINK; //< Index to the next free link.
+        public int salt; //< Counter describing modifications to the tile.
+        public DtMeshData data; // The tile data.
+        public DtLink[] links; // The tile links. [Size: dtMeshHeader::maxLinkCount]
 
-        /** Counter describing modifications to the tile. */
-        public int salt;
-
-        /** The tile data. */
-        public DtMeshData data;
-
-        public int[] polyLinks;
-
-        /** The tile links. */
-        public readonly List<DtLink> links = new List<DtLink>();
-
-        /** Index to the next free link. */
-        public int linksFreeList = DT_NULL_LINK; // FIXME: Remove
-
-        /** Tile flags. (See: #dtTileFlags) */
-        public int flags;
+        public int flags; //< Tile flags. (See: #dtTileFlags)
+        public DtMeshTile next; //< The next free tile, or the next tile in the spatial grid.
 
         public DtMeshTile(int index)
         {

@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -100,7 +100,6 @@ namespace DotRecast.Detour.TileCache
             List<byte[]> result = new List<byte[]>();
             if (lset != null)
             {
-                DtTileCacheBuilder builder = new DtTileCacheBuilder();
                 for (int i = 0; i < lset.layers.Length; ++i)
                 {
                     RcHeightfieldLayer layer = lset.layers[i];
@@ -128,7 +127,7 @@ namespace DotRecast.Detour.TileCache
                     header.hmax = layer.hmax;
 
                     var comp = _compFactory.Create(storageParams.Compatibility ? 0 : 1);
-                    var bytes = builder.CompressTileCacheLayer(header, layer.heights, layer.areas, layer.cons, storageParams.Order, storageParams.Compatibility, comp);
+                    var bytes = DtTileCacheBuilder.CompressTileCacheLayer(header, layer.heights, layer.areas, layer.cons, storageParams.Order, storageParams.Compatibility, comp);
                     result.Add(bytes);
                 }
             }

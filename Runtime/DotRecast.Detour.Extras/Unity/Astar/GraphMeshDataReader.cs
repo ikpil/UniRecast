@@ -1,5 +1,6 @@
 /*
-recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
+recast4j Copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -126,7 +127,7 @@ namespace DotRecast.Detour.Extras.Unity.Astar
                     header.vertCount = vertsCount;
                     header.detailMeshCount = nodeCount;
                     header.detailTriCount = nodeCount;
-                    header.maxLinkCount = nodeCount * 3 * 2; // XXX: Needed by Recast, not needed by recast4j
+                    header.maxLinkCount = nodeCount * 3 * 2; // needed by Recast, not needed by recast4j, needed by DotRecast
                     header.bmin.X = meta.forcedBoundsCenter.x - 0.5f * meta.forcedBoundsSize.x +
                                     meta.cellSize * meta.tileSizeX * x;
                     header.bmin.Y = ymin;

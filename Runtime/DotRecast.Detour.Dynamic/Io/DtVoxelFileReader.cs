@@ -1,6 +1,6 @@
 /*
 recast4j copyright (c) 2021 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -35,12 +35,12 @@ namespace DotRecast.Detour.Dynamic.Io
 
         public DtVoxelFile Read(BinaryReader stream)
         {
-            RcByteBuffer buf = IOUtils.ToByteBuffer(stream);
+            RcByteBuffer buf = RcIO.ToByteBuffer(stream);
             DtVoxelFile file = new DtVoxelFile();
             int magic = buf.GetInt();
             if (magic != DtVoxelFile.MAGIC)
             {
-                magic = IOUtils.SwapEndianness(magic);
+                magic = RcIO.SwapEndianness(magic);
                 if (magic != DtVoxelFile.MAGIC)
                 {
                     throw new IOException("Invalid magic");

@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -944,13 +944,13 @@ namespace DotRecast.Detour.Crowd
                 }
 
                 // Find corners for steering
-                ag.corridor.FindCorners(ref ag.corners, DtCrowdConst.DT_CROWDAGENT_MAX_CORNERS, _navQuery, _filters[ag.option.queryFilterType]);
+                ag.ncorners = ag.corridor.FindCorners(ag.corners, DtCrowdConst.DT_CROWDAGENT_MAX_CORNERS, _navQuery, _filters[ag.option.queryFilterType]);
 
                 // Check to see if the corner after the next corner is directly visible,
                 // and short cut to there.
-                if ((ag.option.updateFlags & DtCrowdAgentUpdateFlags.DT_CROWD_OPTIMIZE_VIS) != 0 && ag.corners.Count > 0)
+                if ((ag.option.updateFlags & DtCrowdAgentUpdateFlags.DT_CROWD_OPTIMIZE_VIS) != 0 && ag.ncorners > 0)
                 {
-                    RcVec3f target = ag.corners[Math.Min(1, ag.corners.Count - 1)].pos;
+                    RcVec3f target = ag.corners[Math.Min(1, ag.ncorners - 1)].pos;
                     ag.corridor.OptimizePathVisibility(target, ag.option.pathOptimizationRange, _navQuery,
                         _filters[ag.option.queryFilterType]);
 
@@ -1000,7 +1000,7 @@ namespace DotRecast.Detour.Crowd
 
                     // Adjust the path over the off-mesh connection.
                     long[] refs = new long[2];
-                    if (ag.corridor.MoveOverOffmeshConnection(ag.corners[ag.corners.Count - 1].refs, refs, ref anim.startPos,
+                    if (ag.corridor.MoveOverOffmeshConnection(ag.corners[ag.ncorners - 1].refs, refs, ref anim.startPos,
                             ref anim.endPos, _navQuery))
                     {
                         anim.initPos = ag.npos;
@@ -1010,7 +1010,7 @@ namespace DotRecast.Detour.Crowd
                         anim.tmax = (RcVecUtils.Dist2D(anim.startPos, anim.endPos) / ag.option.maxSpeed) * 0.5f;
 
                         ag.state = DtCrowdAgentState.DT_CROWDAGENT_STATE_OFFMESH;
-                        ag.corners.Clear();
+                        ag.ncorners = 0;
                         ag.neis.Clear();
                         continue;
                     }

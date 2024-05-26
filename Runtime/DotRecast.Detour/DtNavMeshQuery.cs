@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -21,25 +21,24 @@ freely, subject to the following restrictions:
 using System;
 using System.Collections.Generic;
 using DotRecast.Core;
-using DotRecast.Core.Collections;
 using DotRecast.Core.Numerics;
 
 namespace DotRecast.Detour
 {
     using static DtDetour;
 
+    /// Provides the ability to perform pathfinding related queries against
+    /// a navigation mesh.
+    /// @ingroup detour
     public class DtNavMeshQuery
     {
-        /// < Add a vertex at every polygon edge crossing.
-        protected readonly DtNavMesh m_nav;
+        protected readonly DtNavMesh m_nav; //< Pointer to navmesh data.
+        protected DtQueryData m_query; //< Sliced query state.
 
-        protected readonly DtNodePool m_tinyNodePool;
-        protected readonly DtNodePool m_nodePool;
-        protected readonly DtNodeQueue m_openList;
+        protected readonly DtNodePool m_tinyNodePool; //< Pointer to small node pool. 
+        protected readonly DtNodePool m_nodePool; //< Pointer to node pool. 
+        protected readonly DtNodeQueue m_openList; //< Pointer to open list queue. 
 
-        protected DtQueryData m_query;
-
-        /// < Sliced query state.
         public DtNavMeshQuery(DtNavMesh nav)
         {
             m_nav = nav;
@@ -302,7 +301,7 @@ namespace DotRecast.Detour
                     parentRef = m_nodePool.GetNodeAtIdx(bestNode.pidx).id;
                 }
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     DtLink link = bestTile.links[i];
                     long neighbourRef = link.refs;
@@ -575,15 +574,22 @@ namespace DotRecast.Detour
             return DtStatus.DT_SUCCESS;
         }
 
-        // FIXME: (PP) duplicate?
+        /// Queries polygons within a tile.
         protected void QueryPolygonsInTile(DtMeshTile tile, RcVec3f qmin, RcVec3f qmax, IDtQueryFilter filter, IDtPolyQuery query)
         {
+            const int batchSize = 32;
+            Span<long> polyRefs = stackalloc long[batchSize];
+            DtPoly[] polys = new DtPoly[batchSize];
+            int n = 0;
+
             if (tile.data.bvTree != null)
             {
                 int nodeIndex = 0;
+                int end = tile.data.header.bvNodeCount;
                 var tbmin = tile.data.header.bmin;
                 var tbmax = tile.data.header.bmax;
                 float qfac = tile.data.header.bvQuantFactor;
+
                 // Calculate quantized box
                 Span<int> bmin = stackalloc int[3];
                 Span<int> bmax = stackalloc int[3];
@@ -604,7 +610,6 @@ namespace DotRecast.Detour
 
                 // Traverse tree
                 long @base = m_nav.GetPolyRefBase(tile);
-                int end = tile.data.header.bvNodeCount;
                 while (nodeIndex < end)
                 {
                     DtBVNode node = tile.data.bvTree[nodeIndex];
@@ -616,7 +621,18 @@ namespace DotRecast.Detour
                         long refs = @base | (long)node.i;
                         if (filter.PassFilter(refs, tile, tile.data.polys[node.i]))
                         {
-                            query.Process(tile, tile.data.polys[node.i], refs);
+                            polyRefs[n] = refs;
+                            polys[n] = tile.data.polys[node.i];
+
+                            if (n == batchSize - 1)
+                            {
+                                query.Process(tile, polys, polyRefs, batchSize);
+                                n = 0;
+                            }
+                            else
+                            {
+                                n++;
+                            }
                         }
                     }
 
@@ -645,6 +661,7 @@ namespace DotRecast.Detour
                         continue;
                     }
 
+                    // Must pass filter
                     long refs = @base | (long)i;
                     if (!filter.PassFilter(refs, tile, p))
                     {
@@ -664,25 +681,77 @@ namespace DotRecast.Detour
 
                     if (DtUtils.OverlapBounds(qmin, qmax, bmin, bmax))
                     {
-                        query.Process(tile, p, refs);
+                        polyRefs[n] = refs;
+                        polys[n] = p;
+
+                        if (n == batchSize - 1)
+                        {
+                            query.Process(tile, polys, polyRefs, batchSize);
+                            n = 0;
+                        }
+                        else
+                        {
+                            n++;
+                        }
                     }
                 }
             }
+
+            // Process the last polygons that didn't make a full batch.
+            if (n > 0)
+            {
+                query.Process(tile, polys, polyRefs, n);
+            }
         }
 
-        /**
-     * Finds polygons that overlap the search box.
-     *
-     * If no polygons are found, the function will return with a polyCount of zero.
-     *
-     * @param center
-     *            The center of the search box. [(x, y, z)]
-     * @param halfExtents
-     *            The search distance along each axis. [(x, y, z)]
-     * @param filter
-     *            The polygon filter to apply to the query.
-     * @return The reference ids of the polygons that overlap the query box.
-     */
+        /// @par 
+        ///
+        /// If no polygons are found, the function will return #DT_SUCCESS with a
+        /// @p polyCount of zero.
+        ///
+        /// If @p polys is too small to hold the entire result set, then the array will 
+        /// be filled to capacity. The method of choosing which polygons from the 
+        /// full set are included in the partial result set is undefined.
+        ///
+        /// Finds polygons that overlap the search box.
+        ///  @param[in]		center		The center of the search box. [(x, y, z)]
+        ///  @param[in]		halfExtents		The search distance along each axis. [(x, y, z)]
+        ///  @param[in]		filter		The polygon filter to apply to the query.
+        ///  @param[out]	polys		The reference ids of the polygons that overlap the query box.
+        ///  @param[out]	polyCount	The number of polygons in the search result.
+        ///  @param[in]		maxPolys	The maximum number of polygons the search result can hold.
+        /// @returns The status flags for the query.
+        public DtStatus QueryPolygons(RcVec3f center, RcVec3f halfExtents,
+            IDtQueryFilter filter,
+            long[] polys, out int polyCount, int maxPolys)
+        {
+            polyCount = 0;
+            if (null == polys || maxPolys < 0)
+                return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
+
+            DtCollectPolysQuery collector = new DtCollectPolysQuery(polys, maxPolys);
+            DtStatus status = QueryPolygons(center, halfExtents, filter, collector);
+            if (status.Failed())
+                return status;
+
+            polyCount = collector.NumCollected();
+            return collector.Overflowed()
+                ? DtStatus.DT_SUCCESS | DtStatus.DT_BUFFER_TOO_SMALL
+                : DtStatus.DT_SUCCESS;
+        }
+
+        /// @par 
+        ///
+        /// The query will be invoked with batches of polygons. Polygons passed
+        /// to the query have bounding boxes that overlap with the center and halfExtents
+        /// passed to this function. The dtPolyQuery::process function is invoked multiple
+        /// times until all overlapping polygons have been processed.
+        ///
+        /// Finds polygons that overlap the search box.
+        ///  @param[in]		center		The center of the search box. [(x, y, z)]
+        ///  @param[in]		halfExtents		The search distance along each axis. [(x, y, z)]
+        ///  @param[in]		filter		The polygon filter to apply to the query.
+        ///  @param[in]		query		The query. Polygons found will be batched together and passed to this query.
         public DtStatus QueryPolygons(RcVec3f center, RcVec3f halfExtents, IDtQueryFilter filter, IDtPolyQuery query)
         {
             if (!center.IsFinite() || !halfExtents.IsFinite() || null == filter)
@@ -693,39 +762,27 @@ namespace DotRecast.Detour
             // Find tiles the query touches.
             RcVec3f bmin = RcVec3f.Subtract(center, halfExtents);
             RcVec3f bmax = RcVec3f.Add(center, halfExtents);
-            foreach (var t in QueryTiles(center, halfExtents))
-            {
-                QueryPolygonsInTile(t, bmin, bmax, filter, query);
-            }
 
-            return DtStatus.DT_SUCCESS;
-        }
-
-        /**
-     * Finds tiles that overlap the search box.
-     */
-        public IList<DtMeshTile> QueryTiles(RcVec3f center, RcVec3f halfExtents)
-        {
-            if (!center.IsFinite() || !halfExtents.IsFinite())
-            {
-                return RcImmutableArray<DtMeshTile>.Empty;
-            }
-
-            RcVec3f bmin = RcVec3f.Subtract(center, halfExtents);
-            RcVec3f bmax = RcVec3f.Add(center, halfExtents);
+            // Find tiles the query touches.
             m_nav.CalcTileLoc(bmin, out var minx, out var miny);
             m_nav.CalcTileLoc(bmax, out var maxx, out var maxy);
 
-            List<DtMeshTile> tiles = new List<DtMeshTile>();
+            const int MAX_NEIS = 32;
+            DtMeshTile[] neis = new DtMeshTile[MAX_NEIS];
+
             for (int y = miny; y <= maxy; ++y)
             {
                 for (int x = minx; x <= maxx; ++x)
                 {
-                    tiles.AddRange(m_nav.GetTilesAt(x, y));
+                    int nneis = m_nav.GetTilesAt(x, y, neis, MAX_NEIS);
+                    for (int j = 0; j < nneis; ++j)
+                    {
+                        QueryPolygonsInTile(neis[j], bmin, bmax, filter, query);
+                    }
                 }
             }
 
-            return tiles;
+            return DtStatus.DT_SUCCESS;
         }
 
         /// @par
@@ -853,7 +910,7 @@ namespace DotRecast.Detour
                     }
                 }
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     long neighbourRef = bestTile.links[i].refs;
 
@@ -991,26 +1048,21 @@ namespace DotRecast.Detour
             return status;
         }
 
-        /**
-     * Intializes a sliced path query.
-     *
-     * Common use case: -# Call InitSlicedFindPath() to initialize the sliced path query. -# Call UpdateSlicedFindPath()
-     * until it returns complete. -# Call FinalizeSlicedFindPath() to get the path.
-     *
-     * @param startRef
-     *            The reference id of the start polygon.
-     * @param endRef
-     *            The reference id of the end polygon.
-     * @param startPos
-     *            A position within the start polygon. [(x, y, z)]
-     * @param endPos
-     *            A position within the end polygon. [(x, y, z)]
-     * @param filter
-     *            The polygon filter to apply to the query.
-     * @param options
-     *            query options (see: #FindPathOptions)
-     * @return
-     */
+        ///@}
+        /// @name Sliced Pathfinding Functions
+        /// Common use case:
+        ///	-# Call initSlicedFindPath() to initialize the sliced path query.
+        ///	-# Call updateSlicedFindPath() until it returns complete.
+        ///	-# Call finalizeSlicedFindPath() to get the path.
+        ///@{ 
+        /// Initializes a sliced path query.
+        ///  @param[in]		startRef	The reference id of the start polygon.
+        ///  @param[in]		endRef		The reference id of the end polygon.
+        ///  @param[in]		startPos	A position within the start polygon. [(x, y, z)]
+        ///  @param[in]		endPos		A position within the end polygon. [(x, y, z)]
+        ///  @param[in]		filter		The polygon filter to apply to the query.
+        ///  @param[in]		options		query options (see: #dtFindPathOptions)
+        /// @returns The status flags for the query.
         public DtStatus InitSlicedFindPath(long startRef, long endRef, RcVec3f startPos, RcVec3f endPos, IDtQueryFilter filter, int options)
         {
             return InitSlicedFindPath(startRef, endRef, startPos, endPos, filter, options, DtDefaultQueryHeuristic.Default, -1.0f);
@@ -1076,13 +1128,10 @@ namespace DotRecast.Detour
             return m_query.status;
         }
 
-        /**
-     * Updates an in-progress sliced path query.
-     *
-     * @param maxIter
-     *            The maximum number of iterations to perform.
-     * @return The status flags for the query.
-     */
+        /// Updates an in-progress sliced path query.
+        ///  @param[in]		maxIter		The maximum number of iterations to perform.
+        ///  @param[out]	doneIters	The actual number of iterations completed. [opt]
+        /// @returns The status flags for the query.
         public virtual DtStatus UpdateSlicedFindPath(int maxIter, out int doneIters)
         {
             doneIters = 0;
@@ -1174,7 +1223,7 @@ namespace DotRecast.Detour
                     }
                 }
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     long neighbourRef = bestTile.links[i].refs;
 
@@ -1322,8 +1371,10 @@ namespace DotRecast.Detour
         }
 
         /// Finalizes and returns the results of a sliced path query.
-        /// @param[out] path An ordered list of polygon references representing the path. (Start to end.)
-        /// [(polyRef) * @p pathCount]
+        ///  @param[out]	path		An ordered list of polygon references representing the path. (Start to end.) 
+        ///  							[(polyRef) * @p pathCount]
+        ///  @param[out]	pathCount	The number of polygons returned in the @p path array.
+        ///  @param[in]		maxPath		The max number of polygons the path array can hold. [Limit: >= 1]
         /// @returns The status flags for the query.
         public virtual DtStatus FinalizeSlicedFindPath(ref List<long> path)
         {
@@ -1426,24 +1477,27 @@ namespace DotRecast.Detour
             return DtStatus.DT_SUCCESS | details;
         }
 
-        protected DtStatus AppendVertex(RcVec3f pos, int flags, long refs, ref List<DtStraightPath> straightPath,
-            int maxStraightPath)
+        protected DtStatus AppendVertex(RcVec3f pos, int flags, long refs, Span<DtStraightPath> straightPath, ref int straightPathCount, int maxStraightPath)
         {
-            if (straightPath.Count > 0 && DtUtils.VEqual(straightPath[straightPath.Count - 1].pos, pos))
+            if (straightPathCount > 0 && DtUtils.VEqual(straightPath[straightPathCount - 1].pos, pos))
             {
                 // The vertices are equal, update flags and poly.
-                straightPath[straightPath.Count - 1] = new DtStraightPath(straightPath[straightPath.Count - 1].pos, flags, refs);
+                straightPath[straightPathCount - 1] = new DtStraightPath(straightPath[straightPathCount - 1].pos, flags, refs);
             }
             else
             {
-                if (straightPath.Count < maxStraightPath)
+                // Append new vertex.
+                straightPath[straightPathCount] = new DtStraightPath(pos, flags, refs);
+                straightPathCount++;
+
+                // If there is no space to append more vertices, return.
+                if (straightPathCount >= maxStraightPath)
                 {
-                    // Append new vertex.
-                    straightPath.Add(new DtStraightPath(pos, flags, refs));
+                    return DtStatus.DT_SUCCESS | DtStatus.DT_BUFFER_TOO_SMALL;
                 }
 
-                // If reached end of path or there is no space to append more vertices, return.
-                if (flags == DtStraightPathFlags.DT_STRAIGHTPATH_END || straightPath.Count >= maxStraightPath)
+                // If reached end of path, return.
+                if (flags == DtStraightPathFlags.DT_STRAIGHTPATH_END)
                 {
                     return DtStatus.DT_SUCCESS;
                 }
@@ -1453,9 +1507,9 @@ namespace DotRecast.Detour
         }
 
         protected DtStatus AppendPortals(int startIdx, int endIdx, RcVec3f endPos, List<long> path,
-            ref List<DtStraightPath> straightPath, int maxStraightPath, int options)
+            Span<DtStraightPath> straightPath, ref int straightPathCount, int maxStraightPath, int options)
         {
-            var startPos = straightPath[straightPath.Count - 1].pos;
+            var startPos = straightPath[straightPathCount - 1].pos;
             // Append or update last vertex
             DtStatus stat;
             for (int i = startIdx; i < endIdx; i++)
@@ -1494,7 +1548,7 @@ namespace DotRecast.Detour
                 if (DtUtils.IntersectSegSeg2D(startPos, endPos, left, right, out var _, out var t))
                 {
                     var pt = RcVec3f.Lerp(left, right, t);
-                    stat = AppendVertex(pt, 0, path[i + 1], ref straightPath, maxStraightPath);
+                    stat = AppendVertex(pt, 0, path[i + 1], straightPath, ref straightPathCount, maxStraightPath);
                     if (!stat.InProgress())
                     {
                         return stat;
@@ -1531,17 +1585,22 @@ namespace DotRecast.Detour
         ///  @param[in]		maxStraightPath		The maximum number of points the straight path arrays can hold.  [Limit: > 0]
         ///  @param[in]		options				Query options. (see: #dtStraightPathOptions)
         /// @returns The status flags for the query.
-        public virtual DtStatus FindStraightPath(RcVec3f startPos, RcVec3f endPos, List<long> path, int pathSize,
-            ref List<DtStraightPath> straightPath,
-            int maxStraightPath, int options)
+        public virtual DtStatus FindStraightPath(RcVec3f startPos, RcVec3f endPos,
+            List<long> path, int pathSize,
+            Span<DtStraightPath> straightPath, out int straightPathCount, int maxStraightPath,
+            int options)
         {
-            if (!startPos.IsFinite() || !endPos.IsFinite() || null == straightPath
-                || null == path || pathSize <= 0 || path[0] == 0 || maxStraightPath <= 0)
+            straightPathCount = 0;
+
+            if (!startPos.IsFinite() || !endPos.IsFinite() ||
+                null == straightPath ||
+                null == path || pathSize <= 0 || path[0] == 0
+                || maxStraightPath <= 0)
             {
                 return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM;
             }
 
-            straightPath.Clear();
+            DtStatus stat = DtStatus.DT_STATUS_NOTHING;
 
             // TODO: Should this be callers responsibility?
             var closestStartPosRes = ClosestPointOnPolyBoundary(path[0], startPos, out var closestStartPos);
@@ -1557,7 +1616,7 @@ namespace DotRecast.Detour
             }
 
             // Add start point.
-            DtStatus stat = AppendVertex(closestStartPos, DtStraightPathFlags.DT_STRAIGHTPATH_START, path[0], ref straightPath, maxStraightPath);
+            stat = AppendVertex(closestStartPos, DtStraightPathFlags.DT_STRAIGHTPATH_START, path[0], straightPath, ref straightPathCount, maxStraightPath);
             if (!stat.InProgress())
             {
                 return stat;
@@ -1604,13 +1663,13 @@ namespace DotRecast.Detour
                             if ((options & (DtStraightPathOptions.DT_STRAIGHTPATH_AREA_CROSSINGS | DtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)) != 0)
                             {
                                 // Ignore status return value as we're just about to return anyway.
-                                AppendPortals(apexIndex, i, closestEndPos, path, ref straightPath, maxStraightPath, options);
+                                AppendPortals(apexIndex, i, closestEndPos, path, straightPath, ref straightPathCount, maxStraightPath, options);
                             }
 
                             // Ignore status return value as we're just about to return anyway.
-                            AppendVertex(closestEndPos, 0, path[i], ref straightPath, maxStraightPath);
+                            AppendVertex(closestEndPos, 0, path[i], straightPath, ref straightPathCount, maxStraightPath);
 
-                            return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM | (straightPath.Count >= maxStraightPath ? DtStatus.DT_BUFFER_TOO_SMALL : DtStatus.DT_STATUS_NOTHING);
+                            return DtStatus.DT_FAILURE | DtStatus.DT_INVALID_PARAM | (straightPathCount >= maxStraightPath ? DtStatus.DT_BUFFER_TOO_SMALL : DtStatus.DT_STATUS_NOTHING);
                         }
 
                         // If starting really close the portal, advance.
@@ -1646,7 +1705,7 @@ namespace DotRecast.Detour
                             // Append portals along the current straight path segment.
                             if ((options & (DtStraightPathOptions.DT_STRAIGHTPATH_AREA_CROSSINGS | DtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)) != 0)
                             {
-                                stat = AppendPortals(apexIndex, leftIndex, portalLeft, path, ref straightPath, maxStraightPath, options);
+                                stat = AppendPortals(apexIndex, leftIndex, portalLeft, path, straightPath, ref straightPathCount, maxStraightPath, options);
                                 if (!stat.InProgress())
                                 {
                                     return stat;
@@ -1669,7 +1728,7 @@ namespace DotRecast.Detour
                             long refs = leftPolyRef;
 
                             // Append or update vertex
-                            stat = AppendVertex(portalApex, flags, refs, ref straightPath, maxStraightPath);
+                            stat = AppendVertex(portalApex, flags, refs, straightPath, ref straightPathCount, maxStraightPath);
                             if (!stat.InProgress())
                             {
                                 return stat;
@@ -1702,7 +1761,7 @@ namespace DotRecast.Detour
                             // Append portals along the current straight path segment.
                             if ((options & (DtStraightPathOptions.DT_STRAIGHTPATH_AREA_CROSSINGS | DtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)) != 0)
                             {
-                                stat = AppendPortals(apexIndex, rightIndex, portalRight, path, ref straightPath, maxStraightPath, options);
+                                stat = AppendPortals(apexIndex, rightIndex, portalRight, path, straightPath, ref straightPathCount, maxStraightPath, options);
                                 if (!stat.InProgress())
                                 {
                                     return stat;
@@ -1725,7 +1784,7 @@ namespace DotRecast.Detour
                             long refs = rightPolyRef;
 
                             // Append or update vertex
-                            stat = AppendVertex(portalApex, flags, refs, ref straightPath, maxStraightPath);
+                            stat = AppendVertex(portalApex, flags, refs, straightPath, ref straightPathCount, maxStraightPath);
                             if (!stat.InProgress())
                             {
                                 return stat;
@@ -1747,7 +1806,7 @@ namespace DotRecast.Detour
                 // Append portals along the current straight path segment.
                 if ((options & (DtStraightPathOptions.DT_STRAIGHTPATH_AREA_CROSSINGS | DtStraightPathOptions.DT_STRAIGHTPATH_ALL_CROSSINGS)) != 0)
                 {
-                    stat = AppendPortals(apexIndex, pathSize - 1, closestEndPos, path, ref straightPath, maxStraightPath, options);
+                    stat = AppendPortals(apexIndex, pathSize - 1, closestEndPos, path, straightPath, ref straightPathCount, maxStraightPath, options);
                     if (!stat.InProgress())
                     {
                         return stat;
@@ -1756,8 +1815,8 @@ namespace DotRecast.Detour
             }
 
             // Ignore status return value as we're just about to return anyway.
-            AppendVertex(closestEndPos, DtStraightPathFlags.DT_STRAIGHTPATH_END, 0, ref straightPath, maxStraightPath);
-            return DtStatus.DT_SUCCESS | (straightPath.Count >= maxStraightPath ? DtStatus.DT_BUFFER_TOO_SMALL : DtStatus.DT_STATUS_NOTHING);
+            AppendVertex(closestEndPos, DtStraightPathFlags.DT_STRAIGHTPATH_END, 0, straightPath, ref straightPathCount, maxStraightPath);
+            return DtStatus.DT_SUCCESS | (straightPathCount >= maxStraightPath ? DtStatus.DT_BUFFER_TOO_SMALL : DtStatus.DT_STATUS_NOTHING);
         }
 
         /// @par
@@ -1867,7 +1926,7 @@ namespace DotRecast.Detour
                     if ((curPoly.neis[j] & DT_EXT_LINK) != 0)
                     {
                         // Tile border.
-                        for (int k = curTile.polyLinks[curPoly.index]; k != DT_NULL_LINK; k = curTile.links[k].next)
+                        for (int k = curPoly.firstLink; k != DT_NULL_LINK; k = curTile.links[k].next)
                         {
                             DtLink link = curTile.links[k];
                             if (link.edge == j)
@@ -2013,7 +2072,7 @@ namespace DotRecast.Detour
 
             // Find the link that points to the 'to' polygon.
             DtLink link = null;
-            for (int i = fromTile.polyLinks[fromPoly.index]; i != DT_NULL_LINK; i = fromTile.links[i].next)
+            for (int i = fromPoly.firstLink; i != DT_NULL_LINK; i = fromTile.links[i].next)
             {
                 if (fromTile.links[i].refs == to)
                 {
@@ -2031,7 +2090,7 @@ namespace DotRecast.Detour
             if (fromPoly.GetPolyType() == DtPolyTypes.DT_POLYTYPE_OFFMESH_CONNECTION)
             {
                 // Find link that points to first vertex.
-                for (int i = fromTile.polyLinks[fromPoly.index]; i != DT_NULL_LINK; i = fromTile.links[i].next)
+                for (int i = fromPoly.firstLink; i != DT_NULL_LINK; i = fromTile.links[i].next)
                 {
                     if (fromTile.links[i].refs == to)
                     {
@@ -2053,7 +2112,7 @@ namespace DotRecast.Detour
 
             if (toPoly.GetPolyType() == DtPolyTypes.DT_POLYTYPE_OFFMESH_CONNECTION)
             {
-                for (int i = toTile.polyLinks[toPoly.index]; i != DT_NULL_LINK; i = toTile.links[i].next)
+                for (int i = toPoly.firstLink; i != DT_NULL_LINK; i = toTile.links[i].next)
                 {
                     if (toTile.links[i].refs == from)
                     {
@@ -2196,16 +2255,16 @@ namespace DotRecast.Detour
         ///
         /// This method is meant to be used for quick, short distance checks.
         ///
-        /// If the path array is too small to hold the result, it will be filled as
+        /// If the path array is too small to hold the result, it will be filled as 
         /// far as possible from the start postion toward the end position.
         ///
         /// <b>Using the Hit Parameter t of RaycastHit</b>
-        ///
-        /// If the hit parameter is a very high value (FLT_MAX), then the ray has hit
-        /// the end position. In this case the path represents a valid corridor to the
+        /// 
+        /// If the hit parameter is a very high value (FLT_MAX), then the ray has hit 
+        /// the end position. In this case the path represents a valid corridor to the 
         /// end position and the value of @p hitNormal is undefined.
         ///
-        /// If the hit parameter is zero, then the start position is on the wall that
+        /// If the hit parameter is zero, then the start position is on the wall that 
         /// was hit and the value of @p hitNormal is undefined.
         ///
         /// If 0 < t < 1.0 then the following applies:
@@ -2217,32 +2276,29 @@ namespace DotRecast.Detour
         ///
         /// <b>Use Case Restriction</b>
         ///
-        /// The raycast ignores the y-value of the end position. (2D check.) This
+        /// The raycast ignores the y-value of the end position. (2D check.) This 
         /// places significant limits on how it can be used. For example:
         ///
-        /// Consider a scene where there is a main floor with a second floor balcony
-        /// that hangs over the main floor. So the first floor mesh extends below the
-        /// balcony mesh. The start position is somewhere on the first floor. The end
+        /// Consider a scene where there is a main floor with a second floor balcony 
+        /// that hangs over the main floor. So the first floor mesh extends below the 
+        /// balcony mesh. The start position is somewhere on the first floor. The end 
         /// position is on the balcony.
         ///
-        /// The raycast will search toward the end position along the first floor mesh.
+        /// The raycast will search toward the end position along the first floor mesh. 
         /// If it reaches the end position's xz-coordinates it will indicate FLT_MAX
         /// (no wall hit), meaning it reached the end position. This is one example of why
         /// this method is meant for short distance checks.
         ///
-        /// Casts a 'walkability' ray along the surface of the navigation mesh from
+        /// Casts a 'walkability' ray along the surface of the navigation mesh from 
         /// the start position toward the end position.
-        /// @note A wrapper around Raycast(..., RaycastHit*). Retained for backward compatibility.
-        /// @param[in] startRef The reference id of the start polygon.
-        /// @param[in] startPos A position within the start polygon representing
-        /// the start of the ray. [(x, y, z)]
-        /// @param[in] endPos The position to cast the ray toward. [(x, y, z)]
-        /// @param[out] t The hit parameter. (FLT_MAX if no wall hit.)
-        /// @param[out] hitNormal The normal of the nearest wall hit. [(x, y, z)]
-        /// @param[in] filter The polygon filter to apply to the query.
-        /// @param[out] path The reference ids of the visited polygons. [opt]
-        /// @param[out] pathCount The number of visited polygons. [opt]
-        /// @param[in] maxPath The maximum number of polygons the @p path array can hold.
+        ///  @param[in]		startRef	The reference id of the start polygon.
+        ///  @param[in]		startPos	A position within the start polygon representing 
+        ///  							the start of the ray. [(x, y, z)]
+        ///  @param[in]		endPos		The position to cast the ray toward. [(x, y, z)]
+        ///  @param[in]		filter		The polygon filter to apply to the query.
+        ///  @param[in]		options		govern how the raycast behaves. See dtRaycastOptions
+        ///  @param[out]	hit			Pointer to a raycast hit structure which will be filled by the results.
+        ///  @param[in]		prevRef		parent of start ref. Used during for cost calculation [opt]
         /// @returns The status flags for the query.
         public DtStatus Raycast(long startRef, RcVec3f startPos, RcVec3f endPos,
             IDtQueryFilter filter, int options,
@@ -2329,7 +2385,7 @@ namespace DotRecast.Detour
                 // Follow neighbours.
                 long nextRef = 0;
 
-                for (int i = tile.polyLinks[poly.index]; i != DT_NULL_LINK; i = tile.links[i].next)
+                for (int i = poly.firstLink; i != DT_NULL_LINK; i = tile.links[i].next)
                 {
                     DtLink link = tile.links[i];
 
@@ -2570,7 +2626,7 @@ namespace DotRecast.Detour
                 resultParent.Add(parentRef);
                 resultCost.Add(bestNode.total);
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     DtLink link = bestTile.links[i];
                     long neighbourRef = link.refs;
@@ -2747,7 +2803,7 @@ namespace DotRecast.Detour
                 resultParent.Add(parentRef);
                 resultCost.Add(bestNode.total);
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     DtLink link = bestTile.links[i];
                     long neighbourRef = link.refs;
@@ -2902,7 +2958,7 @@ namespace DotRecast.Detour
                 long curRef = curNode.id;
                 m_nav.GetTileAndPolyByRefUnsafe(curRef, out var curTile, out var curPoly);
 
-                for (int i = curTile.polyLinks[curPoly.index]; i != DT_NULL_LINK; i = curTile.links[i].next)
+                for (int i = curPoly.firstLink; i != DT_NULL_LINK; i = curTile.links[i].next)
                 {
                     DtLink link = curTile.links[i];
                     long neighbourRef = link.refs;
@@ -2970,7 +3026,7 @@ namespace DotRecast.Detour
 
                         // Connected polys do not overlap.
                         bool connected = false;
-                        for (int k = curTile.polyLinks[curPoly.index]; k != DT_NULL_LINK; k = curTile.links[k].next)
+                        for (int k = curPoly.firstLink; k != DT_NULL_LINK; k = curTile.links[k].next)
                         {
                             if (curTile.links[k].refs == pastRef)
                             {
@@ -3079,7 +3135,7 @@ namespace DotRecast.Detour
                 if ((poly.neis[j] & DT_EXT_LINK) != 0)
                 {
                     // Tile border.
-                    for (int k = tile.polyLinks[poly.index]; k != DT_NULL_LINK; k = tile.links[k].next)
+                    for (int k = poly.firstLink; k != DT_NULL_LINK; k = tile.links[k].next)
                     {
                         DtLink link = tile.links[k];
                         if (link.edge == j)
@@ -3247,7 +3303,7 @@ namespace DotRecast.Detour
                     {
                         // Tile border.
                         bool solid = true;
-                        for (int k = bestTile.polyLinks[bestPoly.index]; k != DT_NULL_LINK; k = bestTile.links[k].next)
+                        for (int k = bestPoly.firstLink; k != DT_NULL_LINK; k = bestTile.links[k].next)
                         {
                             DtLink link = bestTile.links[k];
                             if (link.edge == j)
@@ -3303,7 +3359,7 @@ namespace DotRecast.Detour
                     bestvi = RcVecUtils.Create(bestTile.data.verts, vi);
                 }
 
-                for (int i = bestTile.polyLinks[bestPoly.index]; i != DT_NULL_LINK; i = bestTile.links[i].next)
+                for (int i = bestPoly.firstLink; i != DT_NULL_LINK; i = bestTile.links[i].next)
                 {
                     DtLink link = bestTile.links[i];
                     long neighbourRef = link.refs;

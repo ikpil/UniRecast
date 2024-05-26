@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -28,20 +28,20 @@ namespace DotRecast.Detour
 
     public static class DtPathUtils
     {
-        private const int MAX_STEER_POINTS = 3;
-
         public static bool GetSteerTarget(DtNavMeshQuery navQuery, RcVec3f startPos, RcVec3f endPos,
             float minTargetDist,
             List<long> path, int pathSize,
             out RcVec3f steerPos, out int steerPosFlag, out long steerPosRef)
         {
+            const int MAX_STEER_POINTS = 3;
+
             steerPos = RcVec3f.Zero;
             steerPosFlag = 0;
             steerPosRef = 0;
 
             // Find steer target.
-            var straightPath = new List<DtStraightPath>(MAX_STEER_POINTS);
-            var result = navQuery.FindStraightPath(startPos, endPos, path, pathSize, ref straightPath, MAX_STEER_POINTS, 0);
+            Span<DtStraightPath> straightPath = stackalloc DtStraightPath[MAX_STEER_POINTS];
+            var result = navQuery.FindStraightPath(startPos, endPos, path, pathSize, straightPath, out var nsteerPath, MAX_STEER_POINTS, 0);
             if (result.Failed())
             {
                 return false;
@@ -49,7 +49,7 @@ namespace DotRecast.Detour
 
             // Find vertex far enough to steer to.
             int ns = 0;
-            while (ns < straightPath.Count)
+            while (ns < nsteerPath)
             {
                 // Stop at Off-Mesh link or when point is further than slop away.
                 if (((straightPath[ns].flags & DtStraightPathFlags.DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0)
@@ -59,7 +59,7 @@ namespace DotRecast.Detour
             }
 
             // Failed to find good point to steer to.
-            if (ns >= straightPath.Count)
+            if (ns >= nsteerPath)
                 return false;
 
             steerPos = straightPath[ns].pos;
@@ -109,7 +109,7 @@ namespace DotRecast.Detour
             }
 
 
-            for (int k = tile.polyLinks[poly.index]; k != DT_NULL_LINK; k = tile.links[k].next)
+            for (int k = poly.firstLink; k != DT_NULL_LINK; k = tile.links[k].next)
             {
                 DtLink link = tile.links[k];
                 if (link.refs != 0)

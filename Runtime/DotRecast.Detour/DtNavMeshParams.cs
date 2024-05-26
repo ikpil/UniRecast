@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -22,27 +22,16 @@ using DotRecast.Core.Numerics;
 
 namespace DotRecast.Detour
 {
-    /**
- * Configuration parameters used to define multi-tile navigation meshes. The values are used to allocate space during
- * the initialization of a navigation mesh.
- *
- * @see NavMesh
- */
+    /// Configuration parameters used to define multi-tile navigation meshes.
+    /// The values are used to allocate space during the initialization of a navigation mesh.
+    /// @see dtNavMesh::init()
+    /// @ingroup detour
     public struct DtNavMeshParams
     {
-        /** The world space origin of the navigation mesh's tile space. [(x, y, z)] */
-        public RcVec3f orig;
-
-        /** The width of each tile. (Along the x-axis.) */
-        public float tileWidth;
-
-        /** The height of each tile. (Along the z-axis.) */
-        public float tileHeight;
-
-        /** The maximum number of tiles the navigation mesh can contain. */
-        public int maxTiles;
-
-        /** The maximum number of polygons each tile can contain. */
-        public int maxPolys;
+        public RcVec3f orig; //< The world space origin of the navigation mesh's tile space. [(x, y, z)]
+        public float tileWidth; //< The width of each tile. (Along the x-axis.)
+        public float tileHeight; //< The height of each tile. (Along the z-axis.)
+        public int maxTiles; //< The maximum number of tiles the navigation mesh can contain. This and maxPolys are used to calculate how many bits are needed to identify tiles and polygons uniquely.
+        public int maxPolys; //< The maximum number of polygons each tile can contain. This and maxTiles are used to calculate how many bits are needed to identify tiles and polygons uniquely.
     }
 }

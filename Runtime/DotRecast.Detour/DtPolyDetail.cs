@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -20,20 +20,13 @@ freely, subject to the following restrictions:
 
 namespace DotRecast.Detour
 {
-    /** Defines the location of detail sub-mesh data within a dtMeshTile. */
+    /// Defines the location of detail sub-mesh data within a dtMeshTile.
     public readonly struct DtPolyDetail
     {
-        /** The offset of the vertices in the MeshTile::detailVerts array. */
-        public readonly int vertBase;
-
-        /** The offset of the triangles in the MeshTile::detailTris array. */
-        public readonly int triBase;
-
-        /** The number of vertices in the sub-mesh. */
-        public readonly int vertCount;
-
-        /** The number of triangles in the sub-mesh. */
-        public readonly int triCount;
+        public readonly int vertBase; //< The offset of the vertices in the dtMeshTile::detailVerts array.
+        public readonly int triBase; //< The offset of the triangles in the dtMeshTile::detailTris array.
+        public readonly int vertCount; //< The number of vertices in the sub-mesh.
+        public readonly int triCount; //< The number of triangles in the sub-mesh.
 
         public DtPolyDetail(int vertBase, int triBase, int vertCount, int triCount)
         {

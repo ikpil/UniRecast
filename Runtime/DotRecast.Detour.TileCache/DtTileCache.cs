@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 recast4j copyright (c) 2015-2019 Piotr Piastucki piotr@jtilia.org
-DotRecast Copyright (c) 2023 Choi Ikpil ikpil@naver.com
+DotRecast Copyright (c) 2023-2024 Choi Ikpil ikpil@naver.com
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -52,9 +52,6 @@ namespace DotRecast.Detour.TileCache
 
         private readonly List<DtObstacleRequest> m_reqs = new List<DtObstacleRequest>();
         private readonly List<long> m_update = new List<long>();
-
-        private readonly DtTileCacheBuilder builder = new DtTileCacheBuilder();
-        private readonly DtTileCacheLayerHeaderReader tileReader = new DtTileCacheLayerHeaderReader();
 
         public DtTileCache(DtTileCacheParams option, DtTileCacheStorageParams storageParams, DtNavMesh navmesh, IRcCompressor tcomp, IDtTileCacheMeshProcess tmprocs)
         {
@@ -245,7 +242,7 @@ namespace DotRecast.Detour.TileCache
             // Make sure the data is in right format.
             RcByteBuffer buf = new RcByteBuffer(data);
             buf.Order(m_storageParams.Order);
-            DtTileCacheLayerHeader header = tileReader.Read(buf, m_storageParams.Compatibility);
+            DtTileCacheLayerHeader header = DtTileCacheLayerHeaderReader.Read(buf, m_storageParams.Compatibility);
             // Make sure the location is free.
             if (GetTileAt(header.tx, header.ty, header.tlayer) != null)
             {
@@ -617,24 +614,24 @@ namespace DotRecast.Detour.TileCache
                 {
                     if (ob.type == DtTileCacheObstacleType.CYLINDER)
                     {
-                        builder.MarkCylinderArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.pos, ob.radius, ob.height, 0);
+                        DtTileCacheBuilder.MarkCylinderArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.pos, ob.radius, ob.height, 0);
                     }
                     else if (ob.type == DtTileCacheObstacleType.BOX)
                     {
-                        builder.MarkBoxArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.bmin, ob.bmax, 0);
+                        DtTileCacheBuilder.MarkBoxArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.bmin, ob.bmax, 0);
                     }
                     else if (ob.type == DtTileCacheObstacleType.ORIENTED_BOX)
                     {
-                        builder.MarkBoxArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.center, ob.extents, ob.rotAux, 0);
+                        DtTileCacheBuilder.MarkBoxArea(layer, tile.header.bmin, m_params.cs, m_params.ch, ob.center, ob.extents, ob.rotAux, 0);
                     }
                 }
             }
 
             // Build navmesh
-            builder.BuildTileCacheRegions(layer, walkableClimbVx);
-            DtTileCacheContourSet lcset = builder.BuildTileCacheContours(layer, walkableClimbVx,
-                m_params.maxSimplificationError);
-            DtTileCachePolyMesh polyMesh = builder.BuildTileCachePolyMesh(lcset, m_navmesh.GetMaxVertsPerPoly());
+            DtTileCacheBuilder.BuildTileCacheRegions(layer, walkableClimbVx);
+            DtTileCacheContourSet lcset = DtTileCacheBuilder.BuildTileCacheContours(layer, walkableClimbVx, m_params.maxSimplificationError);
+            DtTileCachePolyMesh polyMesh = DtTileCacheBuilder.BuildTileCachePolyMesh(lcset, m_navmesh.GetMaxVertsPerPoly());
+
             // Early out if the mesh tile is empty.
             if (polyMesh.npolys == 0)
             {
@@ -678,7 +675,7 @@ namespace DotRecast.Detour.TileCache
 
         public DtTileCacheLayer DecompressTile(DtCompressedTile tile)
         {
-            DtTileCacheLayer layer = builder.DecompressTileCacheLayer(m_tcomp, tile.data, m_storageParams.Order, m_storageParams.Compatibility);
+            DtTileCacheLayer layer = DtTileCacheBuilder.DecompressTileCacheLayer(m_tcomp, tile.data, m_storageParams.Order, m_storageParams.Compatibility);
             return layer;
         }
 
