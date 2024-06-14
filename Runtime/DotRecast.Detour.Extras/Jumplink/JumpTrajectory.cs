@@ -1,9 +1,10 @@
 using System;
+using DotRecast.Core;
 using DotRecast.Core.Numerics;
 
 namespace DotRecast.Detour.Extras.Jumplink
 {
-    public class JumpTrajectory : Trajectory
+    public class JumpTrajectory : ITrajectory
     {
         private readonly float jumpHeight;
 
@@ -12,13 +13,13 @@ namespace DotRecast.Detour.Extras.Jumplink
             this.jumpHeight = jumpHeight;
         }
 
-        public override RcVec3f Apply(RcVec3f start, RcVec3f end, float u)
+        public RcVec3f Apply(RcVec3f start, RcVec3f end, float u)
         {
             return new RcVec3f
             {
-                X = Lerp(start.X, end.X, u), 
+                X = RcMath.Lerp(start.X, end.X, u),
                 Y = InterpolateHeight(start.Y, end.Y, u),
-                Z = Lerp(start.Z, end.Z, u)
+                Z = RcMath.Lerp(start.Z, end.Z, u)
             };
         }
 

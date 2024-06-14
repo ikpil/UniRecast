@@ -8,12 +8,6 @@ namespace DotRecast.Core.Numerics
         public const float EPSILON = 1e-6f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Create(float[] values)
-        {
-            return Create(values, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RcVec3f Create(Span<float> values, int n)
         {
             return new RcVec3f(values[n + 0], values[n + 1], values[n + 2]);
@@ -42,12 +36,6 @@ namespace DotRecast.Core.Numerics
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Scale(this RcVec3f v, float scale)
-        {
-            return v * scale;
-        }
-
         /// Derives the dot product of two vectors on the xz-plane. (@p u . @p v)
         /// @param[in] u A vector [(x, y, z)]
         /// @param[in] v A vector [(x, y, z)]
@@ -63,46 +51,6 @@ namespace DotRecast.Core.Numerics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot2D(this RcVec3f @this, Span<float> v, int vi)
-        {
-            return @this.X * v[vi] +
-                   @this.Z * v[vi + 2];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Add(RcVec3f a, float[] verts, int i)
-        {
-            return new RcVec3f(
-                a.X + verts[i],
-                a.Y + verts[i + 1],
-                a.Z + verts[i + 2]
-            );
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Subtract(float[] verts, int i, int j)
-        {
-            return new RcVec3f(
-                verts[i] - verts[j],
-                verts[i + 1] - verts[j + 1],
-                verts[i + 2] - verts[j + 2]
-            );
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Subtract(RcVec3f i, float[] verts, int j)
-        {
-            return new RcVec3f(
-                i.X - verts[j],
-                i.Y - verts[j + 1],
-                i.Z - verts[j + 2]
-            );
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Cross(float[] dest, float[] v1, float[] v2)
         {
             dest[0] = v1[1] * v2[2] - v1[2] * v2[1];
@@ -116,22 +64,6 @@ namespace DotRecast.Core.Numerics
             @out[n + 0] = @in[m + 0];
             @out[n + 1] = @in[m + 1];
             @out[n + 2] = @in[m + 2];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(float[] v1, float[] v2)
-        {
-            return v1[0] * v2[0] +
-                   v1[1] * v2[1] +
-                   v1[2] * v2[2];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(float[] v1, RcVec3f vector2)
-        {
-            return v1[0] * vector2.X +
-                   v1[1] * vector2.Y +
-                   v1[2] * vector2.Z;
         }
 
         /// Returns the distance between two points.
@@ -165,26 +97,6 @@ namespace DotRecast.Core.Numerics
             }
 
             return v;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Min(RcVec3f v, float[] @in, int i)
-        {
-            return new RcVec3f(
-                (v.X < @in[i + 0]) ? v.X : @in[i + 0],
-                (v.Y < @in[i + 1]) ? v.Y : @in[i + 1],
-                (v.Z < @in[i + 2]) ? v.Z : @in[i + 2]
-            );
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RcVec3f Max(RcVec3f v, float[] @in, int i)
-        {
-            return new RcVec3f(
-                (v.X > @in[i + 0]) ? v.X : @in[i + 0],
-                (v.Y > @in[i + 1]) ? v.Y : @in[i + 1],
-                (v.Z > @in[i + 2]) ? v.Z : @in[i + 2]
-            );
         }
 
         /// Derives the distance between the specified points on the xz-plane.

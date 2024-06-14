@@ -57,12 +57,12 @@ namespace DotRecast.Recast.Toolset.Geom
             this.faces = faces;
             normals = new float[faces.Length];
             CalculateNormals();
-            bmin = RcVecUtils.Create(vertices);
-            bmax = RcVecUtils.Create(vertices);
+            bmin = new RcVec3f(vertices);
+            bmax = new RcVec3f(vertices);
             for (int i = 1; i < vertices.Length / 3; i++)
             {
-                bmin = RcVecUtils.Min(bmin, vertices, i * 3);
-                bmax = RcVecUtils.Max(bmax, vertices, i * 3);
+                bmin = RcVec3f.Min(bmin, RcVecUtils.Create(vertices, i * 3));
+                bmax = RcVec3f.Max(bmax, RcVecUtils.Create(vertices, i * 3));
             }
 
             _mesh = new RcTriMesh(vertices, faces);
@@ -87,11 +87,11 @@ namespace DotRecast.Recast.Toolset.Geom
         {
             for (int i = 0; i < faces.Length; i += 3)
             {
-                int v0 = faces[i] * 3;
-                int v1 = faces[i + 1] * 3;
-                int v2 = faces[i + 2] * 3;
-                var e0 = RcVecUtils.Subtract(vertices, v1, v0);
-                var e1 = RcVecUtils.Subtract(vertices, v2, v0);
+                RcVec3f v0 = RcVecUtils.Create(vertices, faces[i] * 3);
+                RcVec3f v1 = RcVecUtils.Create(vertices, faces[i + 1] * 3);
+                RcVec3f v2 = RcVecUtils.Create(vertices, faces[i + 2] * 3);
+                RcVec3f e0 = v1 - v0;
+                RcVec3f e1 = v2 - v0;
 
                 normals[i] = e0.Y * e1.Z - e0.Z * e1.Y;
                 normals[i + 1] = e0.Z * e1.X - e0.X * e1.Z;
@@ -150,7 +150,7 @@ namespace DotRecast.Recast.Toolset.Geom
             q.X = src.X + (dst.X - src.X) * btmax;
             q.Y = src.Z + (dst.Z - src.Z) * btmax;
 
-            List<RcChunkyTriMeshNode> chunks = _mesh.chunkyTriMesh.GetChunksOverlappingSegment(p, q);
+            List<RcChunkyTriMeshNode> chunks = RcChunkyTriMeshs.GetChunksOverlappingSegment(_mesh.chunkyTriMesh, p, q);
             if (0 == chunks.Count)
             {
                 return false;
