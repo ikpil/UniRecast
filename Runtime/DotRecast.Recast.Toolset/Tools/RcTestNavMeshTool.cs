@@ -91,7 +91,7 @@ namespace DotRecast.Recast.Toolset.Tools
                     len = STEP_SIZE / len;
                 }
 
-                RcVec3f moveTgt = RcVecUtils.Mad(iterPos, delta, len);
+                RcVec3f moveTgt = RcVec.Mad(iterPos, delta, len);
 
                 // Move
                 navQuery.MoveAlongSurface(pathIterPolys[0], iterPos, moveTgt, filter, out var result, visited, out nvisited, 16);
@@ -272,7 +272,7 @@ namespace DotRecast.Recast.Toolset.Tools
             // results ...
             polys = path;
 
-            if (t > 1)
+            if (t >= 1)
             {
                 // No hit
                 hitPos = endPos;
@@ -380,7 +380,7 @@ namespace DotRecast.Recast.Toolset.Tools
             float nx = (epos.Z - spos.Z) * 0.25f;
             float nz = -(epos.X - spos.X) * 0.25f;
 
-            var tempQueryPoly = new RcVec3f[4];
+            RcVec3f[] tempQueryPoly = new RcVec3f[4];
             tempQueryPoly[0].X = spos.X + nx * 1.2f;
             tempQueryPoly[0].Y = spos.Y + agentHeight / 2;
             tempQueryPoly[0].Z = spos.Z + nz * 1.2f;

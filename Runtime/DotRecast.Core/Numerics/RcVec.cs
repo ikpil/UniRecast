@@ -3,9 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace DotRecast.Core.Numerics
 {
-    public static class RcVecUtils
+    public static class RcVec
     {
         public const float EPSILON = 1e-6f;
+        public static readonly float EQUAL_THRESHOLD = RcMath.Sqr(1.0f / 16384.0f);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RcVec3f Create(Span<float> values, int n)
@@ -36,6 +37,75 @@ namespace DotRecast.Core.Numerics
             }
         }
 
+        /// Performs a 'sloppy' colocation check of the specified points.
+        /// @param[in] p0 A point. [(x, y, z)]
+        /// @param[in] p1 A point. [(x, y, z)]
+        /// @return True if the points are considered to be at the same location.
+        ///
+        /// Basically, this function will return true if the specified points are
+        /// close enough to eachother to be considered colocated.
+        public static bool Equal(RcVec3f p0, RcVec3f p1)
+        {
+            float d = RcVec3f.DistanceSquared(p0, p1);
+            return d < EQUAL_THRESHOLD;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Dot2(RcVec3f a, RcVec3f b)
+        {
+            return a.X * b.X + a.Z * b.Z;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float DistSq2(float[] verts, int p, int q)
+        {
+            float dx = verts[q + 0] - verts[p + 0];
+            float dy = verts[q + 2] - verts[p + 2];
+            return dx * dx + dy * dy;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Dist2(float[] verts, int p, int q)
+        {
+            return MathF.Sqrt(DistSq2(verts, p, q));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float DistSq2(RcVec3f p, RcVec3f q)
+        {
+            float dx = q.X - p.X;
+            float dy = q.Z - p.Z;
+            return dx * dx + dy * dy;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Dist2(RcVec3f p, RcVec3f q)
+        {
+            return MathF.Sqrt(DistSq2(p, q));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Cross2(float[] verts, int p1, int p2, int p3)
+        {
+            float u1 = verts[p2 + 0] - verts[p1 + 0];
+            float v1 = verts[p2 + 2] - verts[p1 + 2];
+            float u2 = verts[p3 + 0] - verts[p1 + 0];
+            float v2 = verts[p3 + 2] - verts[p1 + 2];
+            return u1 * v2 - v1 * u2;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Cross2(RcVec3f p1, RcVec3f p2, RcVec3f p3)
+        {
+            float u1 = p2.X - p1.X;
+            float v1 = p2.Z - p1.Z;
+            float u2 = p3.X - p1.X;
+            float v2 = p3.Z - p1.Z;
+            return u1 * v2 - v1 * u2;
+        }
+
         /// Derives the dot product of two vectors on the xz-plane. (@p u . @p v)
         /// @param[in] u A vector [(x, y, z)]
         /// @param[in] v A vector [(x, y, z)]
@@ -60,6 +130,14 @@ namespace DotRecast.Core.Numerics
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Copy(float[] @out, int n, float[] @in, int m)
+        {
+            @out[n + 0] = @in[m + 0];
+            @out[n + 1] = @in[m + 1];
+            @out[n + 2] = @in[m + 2];
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Copy(Span<float> @out, int n, Span<float> @in, int m)
         {
             @out[n + 0] = @in[m + 0];
             @out[n + 1] = @in[m + 1];
@@ -114,6 +192,10 @@ namespace DotRecast.Core.Numerics
             return (float)MathF.Sqrt(dx * dx + dz * dz);
         }
 
+        /// Derives the square of the distance between the specified points on the xz-plane.
+        ///  @param[in]		v1	A point. [(x, y, z)]
+        ///  @param[in]		v2	A point. [(x, y, z)]
+        /// @return The square of the distance between the point on the xz-plane.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Dist2DSqr(RcVec3f v1, RcVec3f v2)
         {

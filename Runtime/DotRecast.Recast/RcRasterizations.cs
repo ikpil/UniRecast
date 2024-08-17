@@ -209,7 +209,7 @@ namespace DotRecast.Recast
         /// @param[out]	outVerts2Count	The number of resulting polygon 2 vertices
         /// @param[in]	axisOffset		THe offset along the specified axis
         /// @param[in]	axis			The separating axis
-        private static void DividePoly(float[] inVerts, int inVertsOffset, int inVertsCount,
+        private static void DividePoly(Span<float> inVerts, int inVertsOffset, int inVertsCount,
             int outVerts1, out int outVerts1Count,
             int outVerts2, out int outVerts2Count,
             float axisOffset, int axis)
@@ -233,7 +233,7 @@ namespace DotRecast.Recast
                     inVerts[outVerts1 + poly1Vert * 3 + 0] = inVerts[inVertsOffset + inVertB * 3 + 0] + (inVerts[inVertsOffset + inVertA * 3 + 0] - inVerts[inVertsOffset + inVertB * 3 + 0]) * s;
                     inVerts[outVerts1 + poly1Vert * 3 + 1] = inVerts[inVertsOffset + inVertB * 3 + 1] + (inVerts[inVertsOffset + inVertA * 3 + 1] - inVerts[inVertsOffset + inVertB * 3 + 1]) * s;
                     inVerts[outVerts1 + poly1Vert * 3 + 2] = inVerts[inVertsOffset + inVertB * 3 + 2] + (inVerts[inVertsOffset + inVertA * 3 + 2] - inVerts[inVertsOffset + inVertB * 3 + 2]) * s;
-                    RcVecUtils.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, outVerts1 + poly1Vert * 3);
+                    RcVec.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, outVerts1 + poly1Vert * 3);
                     poly1Vert++;
                     poly2Vert++;
 
@@ -241,12 +241,12 @@ namespace DotRecast.Recast
                     // since these were already added above
                     if (inVertAxisDelta[inVertA] > 0)
                     {
-                        RcVecUtils.Copy(inVerts, outVerts1 + poly1Vert * 3, inVerts, inVertsOffset + inVertA * 3);
+                        RcVec.Copy(inVerts, outVerts1 + poly1Vert * 3, inVerts, inVertsOffset + inVertA * 3);
                         poly1Vert++;
                     }
                     else if (inVertAxisDelta[inVertA] < 0)
                     {
-                        RcVecUtils.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, inVertsOffset + inVertA * 3);
+                        RcVec.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, inVertsOffset + inVertA * 3);
                         poly2Vert++;
                     }
                 }
@@ -255,7 +255,7 @@ namespace DotRecast.Recast
                     // add the i'th point to the right polygon. Addition is done even for points on the dividing line
                     if (inVertAxisDelta[inVertA] >= 0)
                     {
-                        RcVecUtils.Copy(inVerts, outVerts1 + poly1Vert * 3, inVerts, inVertsOffset + inVertA * 3);
+                        RcVec.Copy(inVerts, outVerts1 + poly1Vert * 3, inVerts, inVertsOffset + inVertA * 3);
                         poly1Vert++;
                         if (inVertAxisDelta[inVertA] != 0)
                         {
@@ -263,7 +263,7 @@ namespace DotRecast.Recast
                         }
                     }
 
-                    RcVecUtils.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, inVertsOffset + inVertA * 3);
+                    RcVec.Copy(inVerts, outVerts2 + poly2Vert * 3, inVerts, inVertsOffset + inVertA * 3);
                     poly2Vert++;
                 }
             }
@@ -295,13 +295,13 @@ namespace DotRecast.Recast
             int flagMergeThreshold)
         {
             // Calculate the bounding box of the triangle.
-            RcVec3f triBBMin = RcVecUtils.Create(verts, v0 * 3);
-            triBBMin = RcVec3f.Min(triBBMin, RcVecUtils.Create(verts, v1 * 3));
-            triBBMin = RcVec3f.Min(triBBMin, RcVecUtils.Create(verts, v2 * 3));
+            RcVec3f triBBMin = RcVec.Create(verts, v0 * 3);
+            triBBMin = RcVec3f.Min(triBBMin, RcVec.Create(verts, v1 * 3));
+            triBBMin = RcVec3f.Min(triBBMin, RcVec.Create(verts, v2 * 3));
 
-            RcVec3f triBBMax = RcVecUtils.Create(verts, v0 * 3);
-            triBBMax = RcVec3f.Max(triBBMax, RcVecUtils.Create(verts, v1 * 3));
-            triBBMax = RcVec3f.Max(triBBMax, RcVecUtils.Create(verts, v2 * 3));
+            RcVec3f triBBMax = RcVec.Create(verts, v0 * 3);
+            triBBMax = RcVec3f.Max(triBBMax, RcVec.Create(verts, v1 * 3));
+            triBBMax = RcVec3f.Max(triBBMax, RcVec.Create(verts, v2 * 3));
 
             // If the triangle does not touch the bounding box of the heightfield, skip the triangle.
             if (!OverlapBounds(triBBMin, triBBMax, heightfieldBBMin, heightfieldBBMax))
@@ -322,15 +322,15 @@ namespace DotRecast.Recast
             z1 = Math.Clamp(z1, 0, h - 1);
 
             // Clip the triangle into all grid cells it touches.
-            float[] buf = new float[7 * 3 * 4];
+            Span<float> buf = stackalloc float[7 * 3 * 4];
             int @in = 0;
             int inRow = 7 * 3;
             int p1 = inRow + 7 * 3;
             int p2 = p1 + 7 * 3;
 
-            RcVecUtils.Copy(buf, 0, verts, v0 * 3);
-            RcVecUtils.Copy(buf, 3, verts, v1 * 3);
-            RcVecUtils.Copy(buf, 6, verts, v2 * 3);
+            RcVec.Copy(buf, 0, verts, v0 * 3);
+            RcVec.Copy(buf, 3, verts, v1 * 3);
+            RcVec.Copy(buf, 6, verts, v2 * 3);
             int nvRow;
             int nvIn = 3;
 

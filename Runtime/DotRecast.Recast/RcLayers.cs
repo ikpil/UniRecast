@@ -25,15 +25,10 @@ using DotRecast.Core.Numerics;
 
 namespace DotRecast.Recast
 {
-    
     using static RcRecast;
 
     public static class RcLayers
     {
-        const int RC_MAX_LAYERS = RcRecast.RC_NOT_CONNECTED;
-        const int RC_MAX_NEIS = 16;
-
-
         private static void AddUnique(List<int> a, int v)
         {
             if (!a.Contains(v))
@@ -61,7 +56,6 @@ namespace DotRecast.Recast
         /// @name Layer, Contour, Polymesh, and Detail Mesh Functions
         /// @see rcHeightfieldLayer, rcContourSet, rcPolyMesh, rcPolyMeshDetail
         /// @{
-
         /// Builds a layer set from the specified compact heightfield.
         /// @ingroup recast
         /// @param[in,out]	ctx				The build context to use during the operation.
@@ -79,10 +73,10 @@ namespace DotRecast.Recast
 
             int w = chf.width;
             int h = chf.height;
-            
-            byte[] srcReg = new byte[chf.spanCount];
-            Array.Fill(srcReg, (byte)0xFF);
-            
+
+            Span<byte> srcReg = stackalloc byte[chf.spanCount];
+            srcReg.Fill(0xFF);
+
             int nsweeps = chf.width;
             RcLayerSweepSpan[] sweeps = new RcLayerSweepSpan[nsweeps];
             for (int i = 0; i < sweeps.Length; i++)
@@ -91,14 +85,14 @@ namespace DotRecast.Recast
             }
 
             // Partition walkable area into monotone regions.
-            int[] prevCount = new int[256];
+            Span<int> prevCount = stackalloc int[256];
             byte regId = 0;
-            
+
             // Sweep one line at a time.
             for (int y = borderSize; y < h - borderSize; ++y)
             {
                 // Collect spans from this row.
-                Array.Fill(prevCount, 0);
+                prevCount.Fill(0);
                 byte sweepId = 0;
 
                 for (int x = borderSize; x < w - borderSize; ++x)
@@ -110,9 +104,9 @@ namespace DotRecast.Recast
                         ref RcCompactSpan s = ref chf.spans[i];
                         if (chf.areas[i] == RC_NULL_AREA)
                             continue;
-                        
+
                         byte sid = 0xFF;
-                        
+
                         // -x
                         if (GetCon(ref s, 0) != RC_NOT_CONNECTED)
                         {
@@ -266,9 +260,11 @@ namespace DotRecast.Recast
             }
 
             // Create 2D layers from regions.
-            int layerId = 0;
+            byte layerId = 0;
 
-            List<int> stack = new List<int>();
+            const int MAX_STACK = 64;
+            Span<byte> stack = stackalloc byte[MAX_STACK];
+            int nstack = 0;
 
             for (int i = 0; i < nregs; ++i)
             {
@@ -281,14 +277,16 @@ namespace DotRecast.Recast
                 root.layerId = layerId;
                 root.@base = true;
 
-                stack.Add(i);
+                nstack = 0;
+                stack[nstack++] = ((byte)i);
 
-                while (stack.Count != 0)
+                while (0 != nstack)
                 {
                     // Pop front
-                    int pop = stack[0]; // TODO : 여기에 stack 처럼 작동하게 했는데, 스택인지는 모르겠음
-                    stack.RemoveAt(0);
-                    RcLayerRegion reg = regs[pop];
+                    RcLayerRegion reg = regs[stack[0]];
+                    nstack--;
+                    for (int j = 0; j < nstack; ++j)
+                        stack[j] = stack[j + 1];
 
                     foreach (int nei in reg.neis)
                     {
@@ -307,19 +305,22 @@ namespace DotRecast.Recast
                         if ((ymax - ymin) >= 255)
                             continue;
 
-                        // Deepen
-                        stack.Add(nei);
-
-                        // Mark layer id
-                        regn.layerId = layerId;
-                        // Merge current layers to root.
-                        foreach (int layer in regn.layers)
+                        if (nstack < MAX_STACK)
                         {
-                            AddUnique(root.layers, layer);
-                        }
+                            // Deepen
+                            stack[nstack++] = (byte)nei;
 
-                        root.ymin = Math.Min(root.ymin, regn.ymin);
-                        root.ymax = Math.Max(root.ymax, regn.ymax);
+                            // Mark layer id
+                            regn.layerId = layerId;
+                            // Merge current layers to root.
+                            foreach (int layer in regn.layers)
+                            {
+                                AddUnique(root.layers, layer);
+                            }
+
+                            root.ymin = Math.Min(root.ymin, regn.ymin);
+                            root.ymax = Math.Max(root.ymax, regn.ymax);
+                        }
                     }
                 }
 
@@ -335,7 +336,7 @@ namespace DotRecast.Recast
                 if (!ri.@base)
                     continue;
 
-                int newId = ri.layerId;
+                byte newId = ri.layerId;
 
                 for (;;)
                 {
@@ -411,7 +412,7 @@ namespace DotRecast.Recast
             }
 
             // Compact layerIds
-            int[] remap = new int[256];
+            Span<byte> remap = stackalloc byte[256];
 
             // Find number of unique layers.
             layerId = 0;
@@ -450,7 +451,7 @@ namespace DotRecast.Recast
             bmin.Z += borderSize * chf.cs;
             bmax.X -= borderSize * chf.cs;
             bmax.Z -= borderSize * chf.cs;
-            
+
             lset = new RcHeightfieldLayerSet();
             lset.layers = new RcHeightfieldLayer[layerId];
             for (int i = 0; i < lset.layers.Length; i++)

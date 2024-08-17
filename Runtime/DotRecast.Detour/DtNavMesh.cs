@@ -66,7 +66,7 @@ namespace DotRecast.Detour
             m_tiles = new DtMeshTile[m_maxTiles];
             m_posLookup = new DtMeshTile[m_tileLutSize];
             m_nextFree = null;
-            for (int i = m_maxTiles-1; i >= 0; --i)
+            for (int i = m_maxTiles - 1; i >= 0; --i)
             {
                 m_tiles[i] = new DtMeshTile(i);
                 m_tiles[i].salt = 1;
@@ -319,13 +319,13 @@ namespace DotRecast.Detour
 
                     // Calc polygon bounds.
                     int v = p.verts[0] * 3;
-                    bmin = RcVecUtils.Create(tile.data.verts, v);
-                    bmax = RcVecUtils.Create(tile.data.verts, v);
+                    bmin = RcVec.Create(tile.data.verts, v);
+                    bmax = RcVec.Create(tile.data.verts, v);
                     for (int j = 1; j < p.vertCount; ++j)
                     {
                         v = p.verts[j] * 3;
-                        bmin = RcVec3f.Min(bmin, RcVecUtils.Create(tile.data.verts, v));
-                        bmax = RcVec3f.Max(bmax, RcVecUtils.Create(tile.data.verts, v));
+                        bmin = RcVec3f.Min(bmin, RcVec.Create(tile.data.verts, v));
+                        bmax = RcVec3f.Max(bmax, RcVec.Create(tile.data.verts, v));
                     }
 
                     if (DtUtils.OverlapBounds(qmin, qmax, bmin, bmax))
@@ -1045,6 +1045,7 @@ namespace DotRecast.Detour
             RcVec3f pmin = new RcVec3f();
             RcVec3f pmax = new RcVec3f();
 
+            Span<RcVec3f> tempV = stackalloc RcVec3f[3];
             if (tile.data.detailMeshes != null)
             {
                 ref DtPolyDetail pd = ref tile.data.detailMeshes[ip];
@@ -1057,7 +1058,7 @@ namespace DotRecast.Detour
                         continue;
                     }
 
-                    RcVec3f[] v = new RcVec3f[3];
+                    Span<RcVec3f> v = tempV;
                     for (int j = 0; j < 3; ++j)
                     {
                         if (tris[ti + j] < poly.vertCount)
@@ -1105,7 +1106,7 @@ namespace DotRecast.Detour
             }
             else
             {
-                RcVec3f[] v = new RcVec3f[2];
+                Span<RcVec3f> v = tempV.Slice(0, 2);
                 for (int j = 0; j < poly.vertCount; ++j)
                 {
                     int k = (j + 1) % poly.vertCount;
@@ -1156,13 +1157,14 @@ namespace DotRecast.Detour
             }
 
             // Find height at the location.
+            Span<RcVec3f> tempV = stackalloc RcVec3f[3];
             if (tile.data.detailMeshes != null)
             {
                 ref DtPolyDetail pd = ref tile.data.detailMeshes[ip];
                 for (int j = 0; j < pd.triCount; ++j)
                 {
                     int t = (pd.triBase + j) * 4;
-                    RcVec3f[] v = new RcVec3f[3];
+                    Span<RcVec3f> v = tempV;
                     for (int k = 0; k < 3; ++k)
                     {
                         if (tile.data.detailTris[t + k] < poly.vertCount)
@@ -1196,7 +1198,7 @@ namespace DotRecast.Detour
             }
             else
             {
-                RcVec3f[] v = new RcVec3f[3];
+                Span<RcVec3f> v = tempV;
                 v[0].X = tile.data.verts[poly.verts[0] * 3];
                 v[0].Y = tile.data.verts[poly.verts[0] * 3 + 1];
                 v[0].Z = tile.data.verts[poly.verts[0] * 3 + 2];
@@ -1489,8 +1491,8 @@ namespace DotRecast.Detour
                 }
             }
 
-            startPos = RcVecUtils.Create(tile.data.verts, poly.verts[idx0] * 3);
-            endPos = RcVecUtils.Create(tile.data.verts, poly.verts[idx1] * 3);
+            startPos = RcVec.Create(tile.data.verts, poly.verts[idx0] * 3);
+            endPos = RcVec.Create(tile.data.verts, poly.verts[idx1] * 3);
 
             return DtStatus.DT_SUCCESS;
         }

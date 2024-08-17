@@ -31,8 +31,8 @@ namespace DotRecast.Detour.TileCache
 {
     public static class DtTileCacheBuilder
     {
-        public const int DT_TILECACHE_NULL_AREA = 0;
-        public const int DT_TILECACHE_WALKABLE_AREA = 63;
+        public const byte DT_TILECACHE_NULL_AREA = 0;
+        public const byte DT_TILECACHE_WALKABLE_AREA = 63;
         public const int DT_TILECACHE_NULL_IDX = 0xffff;
 
         private static readonly int[] DirOffsetX = { -1, 0, 1, 0, };
@@ -52,14 +52,14 @@ namespace DotRecast.Detour.TileCache
             }
 
             // Partition walkable area into monotone regions.
-            int[] prevCount = new int[256];
+            Span<byte> prevCount = stackalloc byte[256];
             byte regId = 0;
 
             for (int y = 0; y < h; ++y)
             {
                 if (regId > 0)
                 {
-                    Array.Fill(prevCount, 0, 0, regId);
+                    RcSpans.Fill<byte>(prevCount, 0, 0, regId);
                 }
 
                 // Memset(prevCount,0,Sizeof(char)*regId);
@@ -181,8 +181,8 @@ namespace DotRecast.Detour.TileCache
                         byte rai = layer.regs[ymi];
                         if (rai != 0xff && rai != ri)
                         {
-                            AddUniqueLast(regs[ri].neis, rai);
-                            AddUniqueLast(regs[rai].neis, ri);
+                            AddUniqueLast(regs[ri].neis, ref regs[ri].nneis, rai);
+                            AddUniqueLast(regs[rai].neis, ref regs[rai].nneis, ri);
                         }
                     }
                 }
@@ -197,8 +197,9 @@ namespace DotRecast.Detour.TileCache
 
                 int merge = -1;
                 int mergea = 0;
-                foreach (int nei in reg.neis)
+                for (int j = 0; j < reg.nneis; ++j)
                 {
+                    byte nei = reg.neis[j];
                     DtLayerMonotoneRegion regn = regs[nei];
                     if (reg.regId == regn.regId)
                         continue;
@@ -225,7 +226,7 @@ namespace DotRecast.Detour.TileCache
             }
 
             // Compact ids.
-            byte[] remap = new byte[256];
+            Span<byte> remap = stackalloc byte[256];
             // Find number of unique regions.
             regId = 0;
             for (int i = 0; i < nregs; ++i)
@@ -246,12 +247,13 @@ namespace DotRecast.Detour.TileCache
             }
         }
 
-        public static void AddUniqueLast(List<byte> a, byte v)
+        public static void AddUniqueLast(byte[] a, ref byte an, byte v)
         {
-            int n = a.Count;
+            int n = an;
             if (n > 0 && a[n - 1] == v)
                 return;
-            a.Add(v);
+            a[an] = v;
+            an++;
         }
 
         public static bool IsConnected(DtTileCacheLayer layer, int ia, int ib, int walkableClimb)
@@ -271,9 +273,11 @@ namespace DotRecast.Detour.TileCache
                 DtLayerMonotoneRegion reg = regs[i];
                 if (reg.regId != oldRegId)
                     continue;
-                foreach (int nei in reg.neis)
+
+                int nnei = reg.nneis;
+                for (int j = 0; j < nnei ; ++j)
                 {
-                    if (regs[nei].regId == newRegId)
+                    if (regs[reg.neis[j]].regId == newRegId)
                         count++;
                 }
             }

@@ -49,6 +49,11 @@ namespace DotRecast.Recast
         /// The number of spans allocated per span spool.
         /// @see rcSpanPool
         public const int RC_SPANS_PER_POOL = 2048;
+        
+        // Must be 255 or smaller (not 256) because layer IDs are stored as
+        // a byte where 255 is a special value.
+        public const int RC_MAX_LAYERS = RC_NOT_CONNECTED;
+        public const int RC_MAX_NEIS = 16;
 
         /// Heighfield border flag.
         /// If a heightfield region ID has this bit set, then the region is a border
@@ -193,9 +198,9 @@ namespace DotRecast.Recast
             for (int i = 0; i < nt; ++i)
             {
                 int tri = i * 3;
-                RcVec3f v0 = RcVecUtils.Create(verts, tris[tri + 0] * 3);
-                RcVec3f v1 = RcVecUtils.Create(verts, tris[tri + 1] * 3);
-                RcVec3f v2 = RcVecUtils.Create(verts, tris[tri + 2] * 3);
+                RcVec3f v0 = RcVec.Create(verts, tris[tri + 0] * 3);
+                RcVec3f v1 = RcVec.Create(verts, tris[tri + 1] * 3);
+                RcVec3f v2 = RcVec.Create(verts, tris[tri + 2] * 3);
                 CalcTriNormal(v0, v1, v2, ref norm);
                 // Check if the face is walkable.
                 if (norm.Y > walkableThr)
@@ -231,9 +236,9 @@ namespace DotRecast.Recast
             for (int i = 0; i < nt; ++i)
             {
                 int tri = i * 3;
-                RcVec3f v0 = RcVecUtils.Create(verts, tris[tri + 0] * 3);
-                RcVec3f v1 = RcVecUtils.Create(verts, tris[tri + 1] * 3);
-                RcVec3f v2 = RcVecUtils.Create(verts, tris[tri + 2] * 3);
+                RcVec3f v0 = RcVec.Create(verts, tris[tri + 0] * 3);
+                RcVec3f v1 = RcVec.Create(verts, tris[tri + 1] * 3);
+                RcVec3f v2 = RcVec.Create(verts, tris[tri + 2] * 3);
                 CalcTriNormal(v0, v1, v2, ref norm);
                 // Check if the face is walkable.
                 if (norm.Y <= walkableThr)

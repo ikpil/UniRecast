@@ -20,7 +20,7 @@ freely, subject to the following restrictions:
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using DotRecast.Core;
 using DotRecast.Core.Collections;
 using DotRecast.Core.Numerics;
@@ -120,8 +120,9 @@ namespace DotRecast.Detour.Crowd
     /// @ingroup crowd
     public class DtCrowd
     {
-        private readonly RcAtomicInteger _agentId = new RcAtomicInteger();
-        private readonly List<DtCrowdAgent> _agents;
+        private readonly RcAtomicInteger _agentIdx;
+        private readonly Dictionary<int, DtCrowdAgent> _agents;
+        private readonly List<DtCrowdAgent> _activeAgents;
 
         private readonly DtPathQueue _pathQ;
 
@@ -170,7 +171,9 @@ namespace DotRecast.Detour.Crowd
             // Allocate temp buffer for merging paths.
             _maxPathResult = DtCrowdConst.MAX_PATH_RESULT;
             _pathQ = new DtPathQueue(config);
-            _agents = new List<DtCrowdAgent>();
+            _agentIdx = new RcAtomicInteger(0);
+            _agents = new Dictionary<int, DtCrowdAgent>();
+            _activeAgents = new List<DtCrowdAgent>();
 
             // The navQuery is mostly used for local searches, no need for large node pool.
             SetNavMesh(nav);
@@ -235,11 +238,10 @@ namespace DotRecast.Detour.Crowd
         /// @return The index of the agent in the agent pool. Or -1 if the agent could not be added.
         public DtCrowdAgent AddAgent(RcVec3f pos, DtCrowdAgentParams option)
         {
-            int idx = _agentId.GetAndIncrement();
+            int idx = _agentIdx.GetAndIncrement();
             DtCrowdAgent ag = new DtCrowdAgent(idx);
             ag.corridor.Init(_maxPathResult);
-            _agents.Add(ag);
-
+            AddAgent(ag);
             UpdateAgentParameters(ag, option);
 
             // Find nearest position on navmesh and place the agent there.
@@ -256,6 +258,7 @@ namespace DotRecast.Detour.Crowd
 
             ag.topologyOptTime = 0;
             ag.targetReplanTime = 0;
+            ag.nneis = 0;
 
             ag.dvel = RcVec3f.Zero;
             ag.nvel = RcVec3f.Zero;
@@ -278,15 +281,27 @@ namespace DotRecast.Detour.Crowd
             return ag;
         }
 
-        /**
-     * Removes the agent from the crowd.
-     *
-     * @param agent
-     *            Agent to be removed
-     */
+        public DtCrowdAgent GetAgent(int idx)
+        {
+            return _agents.GetValueOrDefault(idx);
+        }
+
+        // Add the agent from the crowd.
+        public void AddAgent(DtCrowdAgent agent)
+        {
+            if (_agents.TryAdd(agent.idx, agent))
+            {
+                _activeAgents.Add(agent);
+            }
+        }
+
+        // Removes the agent from the crowd.
         public void RemoveAgent(DtCrowdAgent agent)
         {
-            _agents.Remove(agent);
+            if (_agents.Remove(agent.idx))
+            {
+                _activeAgents.Remove(agent);
+            }
         }
 
         private bool RequestMoveTargetReplan(DtCrowdAgent ag, long refs, RcVec3f pos)
@@ -358,7 +373,7 @@ namespace DotRecast.Detour.Crowd
      */
         public IList<DtCrowdAgent> GetActiveAgents()
         {
-            return _agents;
+            return _activeAgents;
         }
 
         public RcVec3f GetQueryExtents()
@@ -875,7 +890,7 @@ namespace DotRecast.Detour.Crowd
                 // Update the collision boundary after certain distance has been passed or
                 // if it has become invalid.
                 float updateThr = ag.option.collisionQueryRange * 0.25f;
-                if (RcVecUtils.Dist2DSqr(ag.npos, ag.boundary.GetCenter()) > RcMath.Sqr(updateThr)
+                if (RcVec.Dist2DSqr(ag.npos, ag.boundary.GetCenter()) > RcMath.Sqr(updateThr)
                     || !ag.boundary.IsValid(_navQuery, _filters[ag.option.queryFilterType]))
                 {
                     ag.boundary.Update(ag.corridor.GetFirstPoly(), ag.npos, ag.option.collisionQueryRange, _navQuery,
@@ -883,21 +898,66 @@ namespace DotRecast.Detour.Crowd
                 }
 
                 // Query neighbour agents
-                GetNeighbours(ag.npos, ag.option.height, ag.option.collisionQueryRange, ag, ref ag.neis, _grid);
+                ag.nneis = GetNeighbours(ag.npos, ag.option.height, ag.option.collisionQueryRange, ag, ag.neis, DtCrowdConst.DT_CROWDAGENT_MAX_NEIGHBOURS, _grid);
             }
         }
 
-
-        private int GetNeighbours(RcVec3f pos, float height, float range, DtCrowdAgent skip, ref List<DtCrowdNeighbour> result, DtProximityGrid grid)
+        public static int AddNeighbour(DtCrowdAgent idx, float dist, Span<DtCrowdNeighbour> neis, int nneis, int maxNeis)
         {
-            result.Clear();
+            // Insert neighbour based on the distance.
+            int nei = 0;
+            if (0 == nneis)
+            {
+                nei = nneis;
+            }
+            else if (dist >= neis[nneis - 1].dist)
+            {
+                if (nneis >= maxNeis)
+                    return nneis;
+                nei = nneis;
+            }
+            else
+            {
+                int i;
+                for (i = 0; i < nneis; ++i)
+                {
+                    if (dist <= neis[i].dist)
+                    {
+                        break;
+                    }
+                }
 
-            int MAX_NEIS = 32;
-            var ids = new DtCrowdAgent[MAX_NEIS];
-            int nids = grid.QueryItems(pos.X - range, pos.Z - range, pos.X + range, pos.Z + range, ids, ids.Length);
+                int tgt = i + 1;
+                int n = Math.Min(nneis - i, maxNeis - tgt);
+                
+                Debug.Assert(tgt + n <= maxNeis);
+
+                if (n > 0)
+                {
+                    RcSpans.Move(neis, i, tgt, n);
+                }
+
+                nei = i;
+            }
+
+            neis[nei] = new DtCrowdNeighbour(idx, dist);
+
+            return Math.Min(nneis + 1, maxNeis);
+        }
+
+        private int GetNeighbours(RcVec3f pos, float height, float range, DtCrowdAgent skip, DtCrowdNeighbour[] result, int maxResult, DtProximityGrid grid)
+        {
+            int n = 0;
+
+            const int MAX_NEIS = 32;
+            Span<int> ids = stackalloc int[MAX_NEIS];
+            int nids = grid.QueryItems(pos.X - range, pos.Z - range,
+                pos.X + range, pos.Z + range,
+                ids, ids.Length);
+
             for (int i = 0; i < nids; ++i)
             {
-                var ag = ids[i];
+                var ag = GetAgent(ids[i]);
                 if (ag == skip)
                 {
                     continue;
@@ -917,11 +977,10 @@ namespace DotRecast.Detour.Crowd
                     continue;
                 }
 
-                result.Add(new DtCrowdNeighbour(ag, distSqr));
+                n = AddNeighbour(ag, distSqr, result, n, maxResult);
             }
 
-            result.Sort((o1, o2) => o1.dist.CompareTo(o2.dist));
-            return result.Count;
+            return n;
         }
 
         private void FindCorners(IList<DtCrowdAgent> agents, DtCrowdAgentDebugInfo debug)
@@ -1007,11 +1066,11 @@ namespace DotRecast.Detour.Crowd
                         anim.polyRef = refs[1];
                         anim.active = true;
                         anim.t = 0.0f;
-                        anim.tmax = (RcVecUtils.Dist2D(anim.startPos, anim.endPos) / ag.option.maxSpeed) * 0.5f;
+                        anim.tmax = (RcVec.Dist2D(anim.startPos, anim.endPos) / ag.option.maxSpeed) * 0.5f;
 
                         ag.state = DtCrowdAgentState.DT_CROWDAGENT_STATE_OFFMESH;
                         ag.ncorners = 0;
-                        ag.neis.Clear();
+                        ag.nneis = 0;
                         continue;
                     }
                     else
@@ -1076,7 +1135,7 @@ namespace DotRecast.Detour.Crowd
                     float w = 0;
                     RcVec3f disp = new RcVec3f();
 
-                    for (int j = 0; j < ag.neis.Count; ++j)
+                    for (int j = 0; j < ag.nneis; ++j)
                     {
                         DtCrowdAgent nei = ag.neis[j].agent;
 
@@ -1097,14 +1156,14 @@ namespace DotRecast.Detour.Crowd
                         float dist = MathF.Sqrt(distSqr);
                         float weight = separationWeight * (1.0f - RcMath.Sqr(dist * invSeparationDist));
 
-                        disp = RcVecUtils.Mad(disp, diff, weight / dist);
+                        disp = RcVec.Mad(disp, diff, weight / dist);
                         w += 1.0f;
                     }
 
                     if (w > 0.0001f)
                     {
                         // Adjust desired velocity.
-                        dvel = RcVecUtils.Mad(dvel, disp, 1.0f / w);
+                        dvel = RcVec.Mad(dvel, disp, 1.0f / w);
                         // Clamp desired velocity to desired speed.
                         float speedSqr = dvel.LengthSquared();
                         float desiredSqr = RcMath.Sqr(ag.desiredSpeed);
@@ -1138,7 +1197,7 @@ namespace DotRecast.Detour.Crowd
                     _obstacleQuery.Reset();
 
                     // Add neighbours as obstacles.
-                    for (int j = 0; j < ag.neis.Count; ++j)
+                    for (int j = 0; j < ag.nneis; ++j)
                     {
                         DtCrowdAgent nei = ag.neis[j].agent;
                         _obstacleQuery.AddCircle(nei.npos, nei.option.radius, nei.vel, nei.dvel);
@@ -1226,7 +1285,7 @@ namespace DotRecast.Detour.Crowd
 
                     float w = 0;
 
-                    for (int j = 0; j < ag.neis.Count; ++j)
+                    for (int j = 0; j < ag.nneis; ++j)
                     {
                         DtCrowdAgent nei = ag.neis[j].agent;
                         long idx1 = nei.idx;
@@ -1260,7 +1319,7 @@ namespace DotRecast.Detour.Crowd
                             pen = (1.0f / dist) * (pen * 0.5f) * _config.collisionResolveFactor;
                         }
 
-                        ag.disp = RcVecUtils.Mad(ag.disp, diff, pen);
+                        ag.disp = RcVec.Mad(ag.disp, diff, pen);
 
                         w += 1.0f;
                     }
