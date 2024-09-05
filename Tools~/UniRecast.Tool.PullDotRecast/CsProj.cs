@@ -1,4 +1,4 @@
-﻿namespace PullDotRecast;
+namespace PullDotRecast;
 
 public class CsProj
 {

@@ -1,4 +1,4 @@
-﻿using DotRecast.Recast.Toolset.Tools;
+using DotRecast.Recast.Toolset.Tools;
 using UnityEditor;
 using UniRecast.Core;
 using UniRecast.Toolsets;

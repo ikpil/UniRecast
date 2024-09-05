@@ -1,4 +1,4 @@
-﻿
+
 using DotRecast.Detour;
 
 namespace UniRecast.Core

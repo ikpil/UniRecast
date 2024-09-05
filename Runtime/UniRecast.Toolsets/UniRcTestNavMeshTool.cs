@@ -1,4 +1,4 @@
-﻿namespace UniRecast.Toolsets
+namespace UniRecast.Toolsets
 {
     using DotRecast.Recast.Toolset.Builder;
     using DotRecast.Recast.Toolset.Tools;

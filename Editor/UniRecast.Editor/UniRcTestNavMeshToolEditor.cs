@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using DotRecast.Detour;
 using DotRecast.Recast.Toolset.Builder;
 using DotRecast.Recast.Toolset.Tools;

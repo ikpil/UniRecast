@@ -1,4 +1,4 @@
-﻿namespace UniRecast.Core
+namespace UniRecast.Core
 {
     public static class UniRcConst
     {

@@ -1,4 +1,4 @@
-﻿namespace UniRecast.Toolsets
+namespace UniRecast.Toolsets
 {
     using UnityEngine;
 

@@ -1,4 +1,4 @@
-﻿using UniRecast.Core;
+using UniRecast.Core;
 using UniRecast.Toolsets;
 using UnityEditor;
 
