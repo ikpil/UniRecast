@@ -1,31 +1,53 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace DotRecast.Core.Buffers
 {
-    public static class RcRentedArray
+    public class RcRentedArray
     {
-        public static RcRentedArray<T> Rent<T>(int minimumLength)
+        public static readonly RcRentedArray Shared = new RcRentedArray();
+
+        private RcRentedArray()
         {
-            var array = ArrayPool<T>.Shared.Rent(minimumLength);
-            return new RcRentedArray<T>(ArrayPool<T>.Shared, array, minimumLength);
+        }
+
+        public RcRentedArray<T> Rent<T>(int minimumLength)
+        {
+            return new RcRentedArray<T>(minimumLength);
+        }
+
+        public void Return<T>(RcRentedArray<T> array)
+        {
+            if (array.IsDisposed)
+                return;
+
+            array.Dispose();
         }
     }
 
-    public class RcRentedArray<T> : IDisposable
+    public ref struct RcRentedArray<T>
     {
-        private ArrayPool<T> _owner;
-        private T[] _array;
+        private readonly T[] _items;
+        public readonly int Length;
+        private bool _disposed;
 
-        public int Length { get; }
-        public bool IsDisposed => null == _owner || null == _array;
+        public bool IsDisposed => _disposed;
 
-        internal RcRentedArray(ArrayPool<T> owner, T[] array, int length)
+        internal RcRentedArray(int length)
         {
-            _owner = owner;
-            _array = array;
             Length = length;
+            _items = ArrayPool<T>.Shared.Rent(length);
+            _disposed = false;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            ArrayPool<T>.Shared.Return(_items, true);
         }
 
         public ref T this[int index]
@@ -33,25 +55,22 @@ namespace DotRecast.Core.Buffers
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                RcThrowHelper.ThrowExceptionIfIndexOutOfRange(index, Length);
-                return ref _array[index];
+                if (0 > index || Length <= index)
+                    RcThrowHelper.ThrowExceptionIfIndexOutOfRange(index, Length);
+
+                if (_disposed)
+                    RcThrowHelper.ThrowNullReferenceException("already disposed");
+
+                return ref _items[index];
             }
         }
 
-        public T[] AsArray()
+        public Span<T> AsSpan()
         {
-            return _array;
-        }
+            if (_disposed)
+                RcThrowHelper.ThrowNullReferenceException("already disposed");
 
-
-        public void Dispose()
-        {
-            if (null != _owner && null != _array)
-            {
-                _owner.Return(_array, true);
-                _owner = null;
-                _array = null;
-            }
+            return new Span<T>(_items, 0, Length);
         }
     }
 }

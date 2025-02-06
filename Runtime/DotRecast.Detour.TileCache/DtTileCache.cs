@@ -44,6 +44,7 @@ namespace DotRecast.Detour.TileCache
         private readonly DtTileCacheParams m_params;
         private readonly DtTileCacheStorageParams m_storageParams;
 
+        private readonly DtTileCacheAlloc m_talloc;
         private readonly IRcCompressor m_tcomp;
         private readonly IDtTileCacheMeshProcess m_tmproc;
 
@@ -58,6 +59,7 @@ namespace DotRecast.Detour.TileCache
             m_params = option;
             m_storageParams = storageParams;
             m_navmesh = navmesh;
+            m_talloc = new DtTileCacheAlloc(); // TODO: ikpil, improve pooling system
             m_tcomp = tcomp;
             m_tmproc = tmprocs;
 
@@ -436,9 +438,12 @@ namespace DotRecast.Detour.TileCache
             return m_obstacles[i];
         }
 
-        private List<long> QueryTiles(RcVec3f bmin, RcVec3f bmax)
+        private DtStatus QueryTiles(RcVec3f bmin, RcVec3f bmax, List<long> results, ref int ntouched)
         {
-            List<long> results = new List<long>();
+            results.Clear();
+
+            int n = 0;
+            
             float tw = m_params.width * m_params.cs;
             float th = m_params.height * m_params.cs;
             int tx0 = (int)MathF.Floor((bmin.X - m_params.orig.X) / tw);
@@ -459,12 +464,14 @@ namespace DotRecast.Detour.TileCache
                         if (DtUtils.OverlapBounds(bmin, bmax, tbmin, tbmax))
                         {
                             results.Add(i);
+                            n++;
                         }
                     }
                 }
             }
 
-            return results;
+            ntouched = n;
+            return DtStatus.DT_SUCCESS;
         }
 
         /**
@@ -500,10 +507,12 @@ namespace DotRecast.Detour.TileCache
                         RcVec3f bmin = new RcVec3f();
                         RcVec3f bmax = new RcVec3f();
                         GetObstacleBounds(ob, ref bmin, ref bmax);
-                        ob.touched = QueryTiles(bmin, bmax);
+
+                        int ntouched = 0;
+                        QueryTiles(bmin, bmax, ob.touched, ref ntouched);
                         // Add tiles to update list.
                         ob.pending.Clear();
-                        foreach (long j in ob.touched)
+                        foreach (var j in ob.touched)
                         {
                             if (!Contains(m_update, j))
                             {
@@ -629,7 +638,7 @@ namespace DotRecast.Detour.TileCache
 
             // Build navmesh
             DtTileCacheBuilder.BuildTileCacheRegions(layer, walkableClimbVx);
-            DtTileCacheContourSet lcset = DtTileCacheBuilder.BuildTileCacheContours(layer, walkableClimbVx, m_params.maxSimplificationError);
+            DtTileCacheContourSet lcset = DtTileCacheBuilder.BuildTileCacheContours(m_talloc, layer, walkableClimbVx, m_params.maxSimplificationError);
             DtTileCachePolyMesh polyMesh = DtTileCacheBuilder.BuildTileCachePolyMesh(lcset, m_navmesh.GetMaxVertsPerPoly());
 
             // Early out if the mesh tile is empty.
