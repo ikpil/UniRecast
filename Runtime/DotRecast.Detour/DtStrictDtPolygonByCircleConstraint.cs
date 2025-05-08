@@ -40,7 +40,7 @@ namespace DotRecast.Detour
         }
 
 
-        public int Apply(Span<float> verts, RcVec3f center, float radius, out Span<float> constrainedVerts)
+        public bool Apply(Span<float> verts, RcVec3f center, float radius, Span<float> constrainedVerts, out int constrainedVertCount)
         {
             float radiusSqr = radius * radius;
             int outsideVertex = -1;
@@ -56,23 +56,28 @@ namespace DotRecast.Detour
             if (outsideVertex == -1)
             {
                 // polygon inside circle
-                constrainedVerts = verts;
-                return verts.Length;
+                verts.CopyTo(constrainedVerts);
+                constrainedVertCount = verts.Length;
+                return true;
             }
 
             Span<float> qCircle = stackalloc float[UnitCircle.Length];
             ScaleCircle(UnitCircle, center, radius, qCircle);
-            float[] intersection = DtConvexConvexIntersections.Intersect(verts, qCircle);
-            if (intersection == null && DtUtils.PointInPolygon(center, verts, verts.Length / 3))
+
+            int maxIntersection = DtConvexConvexIntersections.CalculateIntersectionBufferSize(verts.Length / 3, qCircle.Length / 3);
+            Span<float> intersection = stackalloc float[maxIntersection];
+            bool result = DtConvexConvexIntersections.Intersect(verts, qCircle, intersection, out int nverts);
+            if (!result && DtUtils.PointInPolygon(center, verts, verts.Length / 3))
             {
                 // circle inside polygon
-                float[] qCircleArray = qCircle.ToArray();
-                constrainedVerts = qCircleArray;
-                return qCircleArray.Length;
+                qCircle.CopyTo(constrainedVerts);
+                constrainedVertCount = qCircle.Length;
+                return true;
             }
 
-            constrainedVerts = intersection;
-            return intersection?.Length ?? 0;
+            intersection.Slice(0, nverts).CopyTo(constrainedVerts);
+            constrainedVertCount = nverts;
+            return true;
         }
     }
 }

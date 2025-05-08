@@ -51,20 +51,6 @@ namespace DotRecast.Core.Numerics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RcVec3f(ReadOnlySpan<float> values)
-        {
-            if (values.Length < 3)
-            {
-                RcThrowHelper.ThrowArgumentOutOfRangeException(nameof(values));
-            }
-
-            X = values[0];
-            Y = values[1];
-            Z = values[2];
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly float Length()
         {
             float lengthSquared = LengthSquared();
@@ -270,5 +256,19 @@ namespace DotRecast.Core.Numerics
                 v.Z *= d
             );
         }
+
+#if NET8_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator RcVec3f(System.Numerics.Vector3 v)
+        {
+            return Unsafe.BitCast<System.Numerics.Vector3, RcVec3f>(v);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator System.Numerics.Vector3(RcVec3f v)
+        {
+            return Unsafe.BitCast<RcVec3f, System.Numerics.Vector3>(v);
+        }
+#endif
     }
 }
