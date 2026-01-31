@@ -1,6 +1,7 @@
 {
     "name": "UniRecast.Core",
     "references": [
+        "Unity.InputSystem",
         "DotRecast.Core",
         "DotRecast.Recast",
         "DotRecast.Detour",

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace UniRecast.Core
 {
@@ -11,7 +12,7 @@ namespace UniRecast.Core
 
     public class UniRcCamera : MonoBehaviour
     {
-        private Vector3 _lastMousePosition;
+        private Vector2 _lastMousePosition;
         private GameObject _capsule;
 
         // input
@@ -36,12 +37,15 @@ namespace UniRecast.Core
 
         private void UpdateMouse(float dt)
         {
+            if (null == Mouse.current)
+                return;
+
             // left button
-            if (Input.GetMouseButtonDown(0))
+            if (Mouse.current.leftButton.wasPressedThisFrame)
             {
                 if (Camera.main != null)
                 {
-                    var tempPosition = Input.mousePosition;
+                    var tempPosition = Mouse.current.position.ReadValue();
                     //Debug.Log($"mouse position - {tempPosition}");
 
                     var ray = Camera.main.ScreenPointToRay(tempPosition);
@@ -57,21 +61,22 @@ namespace UniRecast.Core
                         }
 
                         var capsuleCollider = _capsule.GetComponent<CapsuleCollider>();
-                        _capsule.transform.position = hit.point + (_capsule.transform.up * capsuleCollider.height * 0.5f);
+                        _capsule.transform.position =
+                            hit.point + (_capsule.transform.up * capsuleCollider.height * 0.5f);
                     }
                 }
             }
 
             // right button
-            if (Input.GetMouseButtonDown(1))
+            if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                _lastMousePosition = Input.mousePosition;
+                _lastMousePosition = Mouse.current.position.ReadValue();
             }
 
-            if (Input.GetMouseButton(1))
+            if (Mouse.current.rightButton.isPressed)
             {
                 // delta
-                var tempMousePosition = Input.mousePosition;
+                var tempMousePosition = Mouse.current.position.ReadValue();
                 var delta = tempMousePosition - _lastMousePosition;
                 _lastMousePosition = tempMousePosition;
 
@@ -80,12 +85,12 @@ namespace UniRecast.Core
             }
 
             // wheel button
-            if (Input.GetMouseButtonDown(2))
+            if (Mouse.current.middleButton.wasPressedThisFrame)
             {
             }
 
             // wheel scroll
-            var scrollDelta = Input.mouseScrollDelta;
+            var scrollDelta = Mouse.current.scroll.ReadValue();
             if (0 != scrollDelta.y)
             {
                 _scrollZoom = Mathf.Clamp(scrollDelta.y, -1, 1);
@@ -180,21 +185,33 @@ namespace UniRecast.Core
             return false;
         }
 
-        private float GetKeyValue(KeyCode key1, KeyCode key2)
+        private float GetKeyValue(Key key1, Key key2)
         {
-            return Input.GetKey(key1) || Input.GetKey(key2) ? 1.0f : -1.0f;
+            var keyboard = Keyboard.current;
+            if (keyboard == null)
+                return -1.0f;
+
+            return IsPressed(keyboard, key1) || IsPressed(keyboard, key2)
+                ? 1.0f
+                : -1.0f;
         }
+
+        private static bool IsPressed(Keyboard keyboard, Key key)
+        {
+            return keyboard[key].isPressed;
+        }
+
 
         private void UpdateKeyboard(float dt)
         {
-            var tempMoveFront = GetKeyValue(KeyCode.W, KeyCode.UpArrow);
-            var tempMoveLeft = GetKeyValue(KeyCode.A, KeyCode.LeftArrow);
-            var tempMoveBack = GetKeyValue(KeyCode.S, KeyCode.DownArrow);
-            var tempMoveRight = GetKeyValue(KeyCode.D, KeyCode.RightArrow);
-            var tempMoveUp = GetKeyValue(KeyCode.Q, KeyCode.PageUp);
-            var tempMoveDown = GetKeyValue(KeyCode.E, KeyCode.PageDown);
-            var tempMoveAccel = GetKeyValue(KeyCode.LeftShift, KeyCode.RightShift);
-            var tempControl = GetKeyValue(KeyCode.LeftControl, KeyCode.RightControl);
+            var tempMoveFront = GetKeyValue(Key.W, Key.UpArrow);
+            var tempMoveLeft = GetKeyValue(Key.A, Key.LeftArrow);
+            var tempMoveBack = GetKeyValue(Key.S, Key.DownArrow);
+            var tempMoveRight = GetKeyValue(Key.D, Key.RightArrow);
+            var tempMoveUp = GetKeyValue(Key.Q, Key.PageUp);
+            var tempMoveDown = GetKeyValue(Key.E, Key.PageDown);
+            var tempMoveAccel = GetKeyValue(Key.LeftShift, Key.RightShift);
+            var tempControl = GetKeyValue(Key.LeftCtrl, Key.RightCtrl);
 
             _modState = 0;
             _modState |= 0 < tempControl ? (int)KeyModState.Control : (int)KeyModState.None;
