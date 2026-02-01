@@ -116,28 +116,39 @@ namespace UniRecast.Core
 
             foreach (var meshFilter in meshFilters)
             {
-                Mesh mesh = meshFilter.sharedMesh;
-                var vertices = mesh.vertices;
-                var triangles = mesh.triangles;
+                //Mesh mesh = meshFilter.sharedMesh;
+                var collider = meshFilter.gameObject.GetComponent<MeshCollider>();
+                if (null == collider)
+                {
+                    collider = meshFilter.gameObject.AddComponent<MeshCollider>();
+                    collider.sharedMesh = meshFilter.sharedMesh; 
+                }
+                
+                bool result = collider.Raycast(ray, out hit, Mathf.Infinity);
+                if (result)
+                    return true;
+                // var mesh = collider.sharedMesh;
+                // var vertices = mesh.vertices;
+                // var triangles = mesh.triangles;
 
                 //Debug.Log($"{meshFilter.gameObject.name}-{triangles.Length}");
 
-                for (int i = 0; i < triangles.Length; i += 3)
-                {
-                    Vector3 v0 = vertices[triangles[i]];
-                    Vector3 v1 = vertices[triangles[i + 1]];
-                    Vector3 v2 = vertices[triangles[i + 2]];
-
-                    if (RayTriangleIntersection(ray, v0, v1, v2, out var tempHit))
-                    {
-                        float dist = Vector3.Distance(tempHit.point, ray.origin);
-                        if (dist < closest)
-                        {
-                            closest = dist;
-                            hit = tempHit;
-                        }
-                    }
-                }
+                // for (int i = 0; i < triangles.Length; i += 3)
+                // {
+                //     Vector3 v0 = vertices[triangles[i]];
+                //     Vector3 v1 = vertices[triangles[i + 1]];
+                //     Vector3 v2 = vertices[triangles[i + 2]];
+                //
+                //     if (RayTriangleIntersection(ray, v0, v1, v2, out var tempHit))
+                //     {
+                //         float dist = Vector3.Distance(tempHit.point, ray.origin);
+                //         if (dist < closest)
+                //         {
+                //             closest = dist;
+                //             hit = tempHit;
+                //         }
+                //     }
+                // }
             }
 
             if (float.MaxValue > closest)
