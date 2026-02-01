@@ -78,7 +78,6 @@ namespace UniRecast.Core
 
         public void SaveFile(string path = "")
         {
-            var beginTicks = RcFrequency.Ticks;
             var workingDir = Directory.GetCurrentDirectory();
             var filePath = Path.Combine(workingDir, path, $"{Name}.obj");
             var objStr = ToGeomObjString();
@@ -87,9 +86,6 @@ namespace UniRecast.Core
             {
                 sw.Write(objStr);
             }
-
-            var elapsedTicks = RcFrequency.Ticks - beginTicks;
-            Debug.Log($"save to {filePath} {elapsedTicks / TimeSpan.TicksPerMillisecond} ms");
         }
     }
 }

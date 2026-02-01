@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using DotRecast.Core;
 using DotRecast.Detour;
 using DotRecast.Recast.Toolset;
 using UnityEngine;
@@ -137,14 +139,29 @@ namespace UniRecast.Core
                 return;
             }
 
+            // step 1 : mesh to obj file
+            var beginTicks = RcFrequency.Ticks;
             var combinedTarget = targets.ToCombinedNavMeshSurfaceTarget(currentScene.name);
             var mesh = combinedTarget.ToMesh();
             mesh.SaveFile();
+            
+            var elapsedTicks = RcFrequency.Ticks - beginTicks;
+            Debug.Log($"mesh to obj file - {elapsedTicks / TimeSpan.TicksPerMillisecond} ms");
 
+            // step 2 : obj to navmesh
+            beginTicks = RcFrequency.Ticks;
             var navMesh = mesh.Build(setting);
             _navMeshData.NavMesh = navMesh;
+            
+            elapsedTicks = RcFrequency.Ticks - beginTicks;
+            Debug.Log($"obj to navmesh - {elapsedTicks / TimeSpan.TicksPerMillisecond} ms");
 
+            // step 3 : navmesh to bytes file
+            beginTicks = RcFrequency.Ticks;
             navMesh.SaveNavMeshFile(combinedTarget.GetName());
+            
+            elapsedTicks = RcFrequency.Ticks - beginTicks;
+            Debug.Log($"navmesh to bytes file - {elapsedTicks / TimeSpan.TicksPerMillisecond} ms");
 
             Debug.Log($"{null != _navMeshData}");
         }
