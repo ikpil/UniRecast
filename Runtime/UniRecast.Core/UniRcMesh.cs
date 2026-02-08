@@ -4,6 +4,7 @@ using System.Text;
 using DotRecast.Core;
 using DotRecast.Core.Numerics;
 using DotRecast.Detour;
+using DotRecast.Recast.Geom;
 using DotRecast.Recast.Toolset;
 using DotRecast.Recast.Toolset.Builder;
 using DotRecast.Recast.Toolset.Geom;
@@ -70,7 +71,7 @@ namespace UniRecast.Core
                 vertices[i * 3 + 2] = Vertices[i].Z;
             }
 
-            var geom = new DemoInputGeomProvider(vertices, Faces);
+            var geom = new RcSampleInputGeomProvider(vertices, Faces);
             var builder = new TileNavMeshBuilder();
             var result = builder.Build(geom, setting);
             return result.NavMesh;
