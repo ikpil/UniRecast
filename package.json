@@ -1,7 +1,7 @@
 {
   "name": "com.ikpil.unirecast",
   "displayName": "UniRecast",
-  "version": "2026.1.134",
+  "version": "2026.1.137",
   "unity": "2022.3",
   "description": "navigation mesh toolset for Unity3D using DotRecast",
   "license": "MIT",
